@@ -1,0 +1,77 @@
+
+> myweb1@0.1.0 start
+> concurrently -n API,WEB -c magenta,cyan "npm run server" "npm run client"
+
+[WEB] 
+[WEB] > myweb1@0.1.0 client
+[WEB] > react-scripts start
+[WEB] 
+[API] 
+[API] > myweb1@0.1.0 server
+[API] > nodemon --watch backend --ext js,json --exec node backend/server.js
+[API] 
+[API] [33m[nodemon] 3.1.14[39m
+[API] [33m[nodemon] to restart at any time, enter `rs`[39m
+[API] [33m[nodemon] watching path(s): backend\**\*[39m
+[API] [33m[nodemon] watching extensions: js,json[39m
+[API] [32m[nodemon] starting `node backend/server.js`[39m
+[API] ◇ injected env (4) from backend\.env // tip: ⌘ suppress logs { quiet: true }
+[API] MongoDB is not configured. Add MONGO_URI in backend/.env to enable persistence.
+[API] Server running on port 5000
+[WEB] (node:14440) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+[WEB] (Use `node --trace-deprecation ...` to show where the warning was created)
+[WEB] (node:14440) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+[WEB] (node:14440) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+[WEB] Starting the development server...
+[WEB] 
+[WEB] Compiled successfully!
+[WEB] 
+[WEB] You can now view myweb1 in the browser.
+[WEB] 
+[WEB]   Local:            http://localhost:3000
+[WEB]   On Your Network:  http://192.168.29.176:3000
+[WEB] 
+[WEB] Note that the development build is not optimized.
+[WEB] To create a production build, use npm run build.
+[WEB] 
+[WEB] webpack compiled [1m[32msuccessfully[39m[22m
+[WEB] (node:14440) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+[API] [0mGET /api/products [31m500[0m 10024.002 ms - 436[0m
+[API] [0mGET /api/products/p2 [33m404[0m 0.634 ms - 31[0m
+[API] [0mGET /api/products/p2 [33m404[0m 0.839 ms - 31[0m
+[API] [0mGET /api/products [31m500[0m 10013.549 ms - 436[0m
+[API] [0mGET /api/products [31m500[0m 10008.733 ms - 436[0m
+[API] [0mGET /api/products [31m500[0m 10009.559 ms - 436[0m
+[API] [0mGET /api/products [31m500[0m 10007.714 ms - 436[0m
+[API] [0mGET /api/products [31m500[0m 10008.576 ms - 436[0m
+[API] [0mGET /api/products/p2 [33m404[0m 0.398 ms - 31[0m
+[API] [0mGET /api/products/p2 [33m404[0m 0.592 ms - 31[0m
+[API] [32m[nodemon] restarting due to changes...[39m
+[API] [32m[nodemon] starting `node backend/server.js`[39m
+[API] ◇ injected env (4) from backend\.env // tip: ◈ encrypted .env [www.dotenvx.com]
+[API] MongoDB is not configured. Add MONGO_URI in backend/.env to enable persistence.
+[API] Server running on port 5000
+[WEB] Compiling...
+[WEB] Compiled successfully!
+[WEB] webpack compiled [1m[32msuccessfully[39m[22m
+[API] [0mGET /api/products/p2 [33m404[0m 2.403 ms - 31[0m
+[API] [0mGET /api/products/p2 [33m404[0m 0.850 ms - 31[0m
+[API] [0mGET /api/products [32m200[0m 0.420 ms - 2[0m
+[API] [0mGET /api/products [36m304[0m 0.317 ms - -[0m
+[API] [0mGET /api/products/p2 [33m404[0m 0.183 ms - 31[0m
+[API] [0mGET /api/products/p2 [33m404[0m 0.293 ms - 31[0m
+[API] [0mGET /api/products [36m304[0m 0.243 ms - -[0m
+[API] [0mGET /api/products [36m304[0m 0.708 ms - -[0m
+[API] [0mGET /api/products [36m304[0m 0.391 ms - -[0m
+[API] [0mGET /api/products [36m304[0m 1.175 ms - -[0m
+[API] [0mGET /api/products/p1 [33m404[0m 0.199 ms - 31[0m
+[API] [0mGET /api/products/p1 [33m404[0m 0.222 ms - 31[0m
+[API] [0mGET /api/products [36m304[0m 0.148 ms - -[0m
+[API] [0mGET /api/products [36m304[0m 0.634 ms - -[0m
+[API] [0mGET /api/products [36m304[0m 0.347 ms - -[0m
+[API] [0mGET /api/products [36m304[0m 0.200 ms - -[0m
+[WEB] Compiling...
+[WEB] Compiled successfully!
+[WEB] webpack compiled [1m[32msuccessfully[39m[22m
+[API] [0mGET /api/products [36m304[0m 0.299 ms - -[0m
+[API] [0mGET /api/products [36m304[0m 0.206 ms - -[0m
