@@ -19,11 +19,27 @@ export default function HomePage() {
     return data;
   }, []);
   const { data: apiProducts = [], loading: productsLoading } = useFetch(fetchProducts, []);
-  console.log("displayProducts =", displayProducts);
-  const displayProducts = apiProducts.length ? apiProducts : products;
-  const tabProducts = useMemo(() => displayProducts.slice(tab, tab + 4).concat(displayProducts.slice(0, Math.max(0, 4 - (displayProducts.length - tab)))), [displayProducts, tab]);
-  const featuredProducts = displayProducts.slice(0, 4);
 
+  const displayProducts = Array.isArray(apiProducts)
+    ? apiProducts
+    : Array.isArray(apiProducts?.products)
+      ? apiProducts.products
+      : products;
+
+  const tabProducts = useMemo(
+    () =>
+      displayProducts
+        .slice(tab, tab + 4)
+        .concat(
+          displayProducts.slice(
+            0,
+            Math.max(0, 4 - (displayProducts.length - tab))
+          )
+        ),
+    [displayProducts, tab]
+  );
+
+  const featuredProducts = displayProducts.slice(0, 4);
   return (
     <Box>
       <Container maxWidth="xl" sx={{ py: { xs: 4, md: 6 } }}>
@@ -39,12 +55,38 @@ export default function HomePage() {
               </Stack>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, transform: { md: 'rotate(-2deg)' } }}>
-                {displayProducts.slice(0, 4).map((product) => (
-                  <Paper key={product._id || product.id} sx={{ p: 1.25, bgcolor: 'rgba(255,255,255,.18)', backdropFilter: 'blur(16px)' }}>
-                    <Box component="img" src={getProductImages(product)[0]} alt={product.name} sx={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: 1 }} />
-                  </Paper>
-                ))}
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: 2,
+                  transform: { md: 'rotate(-2deg)' }
+                }}
+              >
+                {(Array.isArray(displayProducts) ? displayProducts : [])
+                  .slice(0, 4)
+                  .map((product) => (
+                    <Paper
+                      key={product?._id || product?.id}
+                      sx={{
+                        p: 1.25,
+                        bgcolor: 'rgba(255,255,255,.18)',
+                        backdropFilter: 'blur(16px)'
+                      }}
+                    >
+                      <Box
+                        component="img"
+                        src={getProductImages(product)?.[0] || ''}
+                        alt={product?.name || 'Product'}
+                        sx={{
+                          width: '100%',
+                          aspectRatio: '1',
+                          objectFit: 'cover',
+                          borderRadius: 1
+                        }}
+                      />
+                    </Paper>
+                  ))}
               </Box>
             </Grid>
           </Grid>
