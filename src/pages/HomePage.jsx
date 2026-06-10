@@ -19,6 +19,7 @@ export default function HomePage() {
     return data;
   }, []);
   const { data: apiProducts = [], loading: productsLoading } = useFetch(fetchProducts, []);
+  console.log("displayProducts =", displayProducts);
   const displayProducts = apiProducts.length ? apiProducts : products;
   const tabProducts = useMemo(() => displayProducts.slice(tab, tab + 4).concat(displayProducts.slice(0, Math.max(0, 4 - (displayProducts.length - tab)))), [displayProducts, tab]);
   const featuredProducts = displayProducts.slice(0, 4);
