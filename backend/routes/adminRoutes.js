@@ -17,6 +17,7 @@ router.get('/orders', controller.listOrders);
 router.put('/orders/:id', controller.updateOrder);
 
 router.get('/users', controller.listUsers);
+router.get('/users/statistics', controller.userStatistics);
 router.put('/users/:id', controller.updateUser);
 router.delete('/users/:id', controller.deleteUser);
 

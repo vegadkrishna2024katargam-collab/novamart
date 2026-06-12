@@ -82,8 +82,11 @@ export default function Navbar() {
 
     const exactProduct = headerProducts.find((product) => product.name.toLowerCase() === query.toLowerCase());
     if (exactProduct) {
-      navigate(`/product/${getProductId(exactProduct)}`);
-      return;
+      const exactProductId = getProductId(exactProduct);
+      if (exactProductId) {
+        navigate(`/product/${exactProductId}`);
+        return;
+      }
     }
 
     navigate(buildProductListPath({ search: query }));
@@ -125,8 +128,9 @@ export default function Navbar() {
               getOptionLabel={(option) => typeof option === 'string' ? option : option.label}
               onInputChange={(_, value) => setSearch(value)}
               onChange={(_, value) => {
-                if (value?.product) {
-                  navigate(`/product/${getProductId(value.product)}`);
+                const selectedProductId = value?.product ? getProductId(value.product) : null;
+                if (selectedProductId) {
+                  navigate(`/product/${selectedProductId}`);
                   return;
                 }
                 runSearch(value || search);

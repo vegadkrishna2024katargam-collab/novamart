@@ -13,7 +13,7 @@ export default function ProductCard({ product }) {
   const { addToCart } = useCart();
   const { toggleWishlist, isWishlisted } = useWishlist();
   const productId = getProductId(product);
-  const detailPath = `/product/${productId}`;
+  const detailPath = productId ? `/product/${productId}` : '/products';
   const images = getProductImages(product);
   const category = getCategoryName(product.category);
   const wished = isWishlisted(productId);
@@ -23,7 +23,10 @@ export default function ProductCard({ product }) {
     event.stopPropagation();
   };
 
-  const openDetails = () => navigate(detailPath);
+  const openDetails = () => {
+    if (!productId) return;
+    navigate(detailPath);
+  };
 
   const openDetailsFromKeyboard = (event) => {
     if (event.key === 'Enter' || event.key === ' ') {

@@ -1,6 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import api from '../services/api';
-import { isAdminEmail } from '../utils/authRole';
 
 const AuthContext = createContext(null);
 
@@ -19,32 +18,17 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = useCallback(async (credentials) => {
-    const role = isAdminEmail(credentials.email) ? 'admin' : 'user';
     const { data } = await api.post('/auth/login', credentials);
-    const session = {
-      ...data,
-      user: {
-        ...data.user,
-        role,
-      },
-    };
-    persistSession(session);
-    return session;
+    persistSession(data);
+    return data;
   }, [persistSession]);
 
   const signup = useCallback(async (formData) => {
     const { data } = await api.post('/auth/signup', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    const session = {
-      ...data,
-      user: {
-        ...data.user,
-        role: 'user',
-      },
-    };
-    persistSession(session);
-    return session;
+    persistSession(data);
+    return data;
   }, [persistSession]);
 
   const logout = useCallback(() => {

@@ -24,14 +24,8 @@ export default function ProductsPage() {
     const { data } = await api.get('/products');
     return data;
   }, []);
-  const { data: apiProducts = [], loading } = useFetch(fetchProducts, []);
-  
-  // Defensive check: ensure displayProducts is always an array
-  const displayProducts = Array.isArray(apiProducts)
-    ? apiProducts
-    : Array.isArray(apiProducts?.products)
-      ? apiProducts.products
-      : demoProducts;
+  const { data: products = [], loading } = useFetch(fetchProducts, []);
+  const displayProducts = products.length ? products : demoProducts;
 
   useEffect(() => {
     setQuery(searchParams.get('search') || '');
@@ -50,9 +44,7 @@ export default function ProductsPage() {
 
   const filtered = useMemo(() => {
     const searchTerm = query.toLowerCase();
-    // Ensure displayProducts is an array before filtering
-    const productsToFilter = Array.isArray(displayProducts) ? displayProducts : [];
-    const result = productsToFilter.filter((product) => {
+    const result = displayProducts.filter((product) => {
       const productCategory = getCategoryName(product.category);
       const searchable = `${product.name} ${product.brand || ''} ${productCategory} ${product.description || ''}`.toLowerCase();
       return searchable.includes(searchTerm) && (category === 'All' || productCategory === category) && product.price >= price[0] && product.price <= price[1];

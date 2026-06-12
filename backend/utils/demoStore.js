@@ -7,6 +7,8 @@ const { buildAddress, hasAddress, mergeSavedAddresses } = require('./addressUtil
 const usersByEmail = new Map();
 const usersById = new Map();
 const orders = [];
+const cartsByUserId = new Map();
+const wishlistsByUserId = new Map();
 const categories = [
   { _id: 'cat-fashion', name: 'Fashion', description: 'Clothing and accessories', status: 'active', productsCount: 0, createdAt: new Date().toISOString() },
   { _id: 'cat-electronics', name: 'Electronics', description: 'Electronics and gadgets', status: 'active', productsCount: 0, createdAt: new Date().toISOString() },
@@ -99,6 +101,8 @@ function publicUser(user) {
     profileImage: user.profileImage,
     defaultAddress: user.defaultAddress || null,
     savedAddresses: Array.isArray(user.savedAddresses) ? user.savedAddresses : [],
+    lastLoginAt: user.lastLoginAt || null,
+    loginCount: Number(user.loginCount || 0),
   };
 }
 
@@ -119,6 +123,7 @@ async function upsertUser({ id, _id, name, email, phone, role = 'user', password
       phone,
       role,
       savedAddresses: [],
+      createdAt: now(),
     };
     indexUser(user);
   }
@@ -155,6 +160,13 @@ async function verifyPassword(user, password) {
 
 async function setPassword(user, password) {
   user.passwordHash = await hashPassword(password);
+  return user;
+}
+
+function recordLogin(user) {
+  if (!user) return null;
+  user.lastLoginAt = now();
+  user.loginCount = Number(user.loginCount || 0) + 1;
   return user;
 }
 
@@ -215,6 +227,50 @@ function createOrder(payload) {
 function findOrdersForUser(user) {
   if (user.role === 'admin') return orders;
   return orders.filter((order) => order.user === user._id);
+}
+
+function productById(id) {
+  return products.find((product) => String(product._id || product.id) === String(id));
+}
+
+function getCart(userId) {
+  const items = cartsByUserId.get(String(userId)) || [];
+  return {
+    user: userId,
+    items: items.map((item) => ({ ...item, product: productById(item.product) || item.product })),
+  };
+}
+
+function addToCart(userId, productId, quantity = 1) {
+  const key = String(userId);
+  const items = cartsByUserId.get(key) || [];
+  const existing = items.find((item) => String(item.product) === String(productId));
+  if (existing) existing.quantity += Math.max(1, Number(quantity || 1));
+  else items.push({ product: productId, quantity: Math.max(1, Number(quantity || 1)) });
+  cartsByUserId.set(key, items);
+  return getCart(userId);
+}
+
+function removeFromCart(userId, productId) {
+  const key = String(userId);
+  const items = (cartsByUserId.get(key) || []).filter((item) => String(item.product) !== String(productId));
+  cartsByUserId.set(key, items);
+  return getCart(userId);
+}
+
+function getWishlist(userId) {
+  return {
+    user: userId,
+    products: (wishlistsByUserId.get(String(userId)) || []).map((id) => productById(id)).filter(Boolean),
+  };
+}
+
+function toggleWishlist(userId, productId) {
+  const key = String(userId);
+  const ids = wishlistsByUserId.get(key) || [];
+  const exists = ids.some((id) => String(id) === String(productId));
+  wishlistsByUserId.set(key, exists ? ids.filter((id) => String(id) !== String(productId)) : [...ids, productId]);
+  return getWishlist(userId);
 }
 
 function updateOrderStatus(id, update) {
@@ -354,6 +410,17 @@ function listUsers() {
   return Array.from(usersById.values()).map((user) => ({ ...publicUser(user), ordersCount: orderCounts[user._id] || 0, status: user.isBlocked ? 'blocked' : 'active', createdAt: user.createdAt || now() }));
 }
 
+function userStatistics() {
+  const users = Array.from(usersById.values()).filter((user) => user.role === 'user');
+  return {
+    registeredUsers: users.length,
+    loggedInUsers: users.filter((user) => user.lastLoginAt).length,
+    activeUsers: users.filter((user) => !user.isBlocked).length,
+    blockedUsers: users.filter((user) => user.isBlocked).length,
+    generatedAt: now(),
+  };
+}
+
 function updateUserByAdmin(id, payload = {}) {
   const user = findUserById(id);
   if (!user) return null;
@@ -387,34 +454,47 @@ function updateSettings(section, payload = {}) {
 }
 
 function adminSummary() {
-  const revenue = orders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+  const salesOrders = orders.filter((order) => !['cancelled', 'refunded'].includes(order.orderStatus));
+  const revenue = salesOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
   const pendingOrders = orders.filter((order) => ['placed', 'pending', 'confirmed'].includes(order.orderStatus || 'placed')).length;
+  const today = new Date();
+  const months = Array.from({ length: 6 }, (_, index) => {
+    const date = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - (5 - index), 1));
+    return {
+      key: date.toISOString().slice(0, 7),
+      month: date.toLocaleString('en-US', { month: 'short', year: '2-digit', timeZone: 'UTC' }),
+    };
+  });
   return {
     totalProducts: products.length,
     totalOrders: orders.length,
-    totalUsers: usersById.size,
+    totalUsers: Array.from(usersById.values()).filter((user) => user.role === 'user').length,
     totalCategories: categories.length,
     totalRevenue: revenue,
     pendingOrders,
-    salesOverview: [{ month: 'Jan', revenue: 12000 }, { month: 'Feb', revenue: 18000 }, { month: 'Mar', revenue: 24000 }, { month: 'Apr', revenue: revenue || 32000 }],
-    ordersOverview: [{ status: 'Pending', count: pendingOrders }, { status: 'Delivered', count: orders.filter((order) => order.orderStatus === 'delivered').length }, { status: 'Cancelled', count: orders.filter((order) => order.orderStatus === 'cancelled').length }],
-    topSellingProducts: products.slice(0, 5).map((product, index) => ({ name: product.name, sold: Math.max(5, 30 - index * 4) })),
-    recentOrders: orders.slice(-5).reverse(),
-    recentUsers: listUsers().slice(-5).reverse(),
+    salesOverview: months.map(({ key, month }) => {
+      const matchingOrders = salesOrders.filter((order) => String(order.createdAt || '').slice(0, 7) === key);
+      return { month, revenue: matchingOrders.reduce((sum, order) => sum + Number(order.total || 0), 0), orders: matchingOrders.length };
+    }),
+    generatedAt: new Date().toISOString(),
   };
 }
 
 module.exports = {
+  addToCart,
   createOrder,
   changeUserPassword,
   findOrdersForUser,
   findUserByEmail,
   findUserById,
+  getCart,
+  getWishlist,
   adminSummary,
   createCategory,
   createCoupon,
   createProduct,
   publicUser,
+  recordLogin,
   deleteCategory,
   deleteCoupon,
   deleteProduct,
@@ -435,7 +515,10 @@ module.exports = {
   updateSettings,
   updateUserByAdmin,
   updateUserProfile,
+  userStatistics,
   updateOrderStatus,
   upsertUser,
   verifyPassword,
+  removeFromCart,
+  toggleWishlist,
 };

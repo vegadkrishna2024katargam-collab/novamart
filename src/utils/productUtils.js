@@ -65,7 +65,9 @@ export function getFallbackProductImage(product = {}) {
 export function getProductImages(product) {
   const images = Array.isArray(product?.images) ? product.images : [];
   const primary = product?.image;
-  const normalizedImages = [...new Set([primary, ...images].filter(Boolean))].map(resolveImageUrl);
+  const normalizedImages = [...new Set([primary, ...images].filter(Boolean))]
+    .map(resolveImageUrl)
+    .filter(Boolean);
   return normalizedImages.length ? normalizedImages : [getFallbackProductImage(product)];
 }
 

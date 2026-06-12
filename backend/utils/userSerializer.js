@@ -9,6 +9,8 @@ function serializeUser(user) {
     profileImage: user.profileImage,
     defaultAddress: user.defaultAddress || null,
     savedAddresses: Array.isArray(user.savedAddresses) ? user.savedAddresses : [],
+    lastLoginAt: user.lastLoginAt || null,
+    loginCount: Number(user.loginCount || 0),
   };
 }
 

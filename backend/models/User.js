@@ -21,6 +21,8 @@ const userSchema = new mongoose.Schema({
   savedAddresses: { type: [addressSchema], default: [] },
   role: { type: String, enum: ['user', 'admin'], default: 'user' },
   isBlocked: { type: Boolean, default: false },
+  lastLoginAt: Date,
+  loginCount: { type: Number, default: 0 },
   resetOtp: String,
   resetOtpExpires: Date,
 }, { timestamps: true });

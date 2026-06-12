@@ -21,6 +21,14 @@ export default function ProductDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const normalizeProductData = (data) => {
+    const isPlainObject = (value) => value && typeof value === 'object' && !Array.isArray(value);
+    if (!isPlainObject(data)) return null;
+    if (isPlainObject(data.product)) return normalizeProductData(data.product);
+    if (isPlainObject(data.data)) return normalizeProductData(data.data);
+    return data;
+  };
+
   useEffect(() => {
     let active = true;
 
@@ -28,21 +36,33 @@ export default function ProductDetailsPage() {
       try {
         setLoading(true);
         setError('');
+        setProduct(null);
+        setSelectedImage('');
+
         const { data } = await api.get(`/products/${id}`);
         if (!active) return;
-        setProduct(data);
-        const images = getProductImages(data);
-        setSelectedImage(images[0]);
+
+        const productData = normalizeProductData(data);
+        if (!productData) {
+          throw new Error('Invalid product response');
+        }
+
+        setProduct(productData);
+
+        const images = getProductImages(productData);
+        setSelectedImage(images[0] || '');
         setQuantity(1);
       } catch (err) {
         if (!active) return;
-        const fallbackProduct = demoProducts.find((item) => item.id === id);
+
+        const fallbackProduct = demoProducts.find((item) => String(item._id || item.id) === String(id));
         if (fallbackProduct) {
           setProduct(fallbackProduct);
-          setSelectedImage(getProductImages(fallbackProduct)[0]);
+          setSelectedImage(getProductImages(fallbackProduct)[0] || '');
           setQuantity(1);
           return;
         }
+
         setError(err.response?.status === 404 ? 'not-found' : 'load-error');
         setProduct(null);
       } finally {
@@ -57,6 +77,12 @@ export default function ProductDetailsPage() {
   }, [id]);
 
   const images = useMemo(() => getProductImages(product), [product]);
+
+  useEffect(() => {
+    if (!images.length) return;
+    setSelectedImage((current) => (images.includes(current) ? current : images[0]));
+  }, [images]);
+
   const stockCount = product?.countInStock ?? product?.stock ?? 12;
   const inStock = stockCount > 0;
   const cartProduct = product ? toCartProduct(product, quantity) : null;

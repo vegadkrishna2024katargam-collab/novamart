@@ -9,6 +9,8 @@ const User = require('../models/User');
 const demoStore = require('../utils/demoStore');
 const { serializeUser } = require('../utils/userSerializer');
 
+const excludedSalesStatuses = ['cancelled', 'refunded'];
+
 const settingsStore = {
   general: { websiteName: 'NovaMart', logo: '', favicon: '', contactEmail: 'support@novamart.local', phoneNumber: '+91 90000 00000', address: 'Mumbai, India' },
   payment: { razorpay: true, stripe: true, paypal: false, cashOnDelivery: true },
@@ -52,19 +54,52 @@ async function resolveCategory(category) {
   return doc._id;
 }
 
+function lastSixMonths() {
+  const today = new Date();
+  const months = [];
+  for (let offset = 5; offset >= 0; offset -= 1) {
+    const date = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - offset, 1));
+    months.push({
+      key: date.toISOString().slice(0, 7),
+      month: date.toLocaleString('en-US', { month: 'short', year: '2-digit', timeZone: 'UTC' }),
+    });
+  }
+  return months;
+}
+
 exports.dashboard = async (req, res, next) => {
   try {
     if (!isMongoReady()) return res.json(demoStore.adminSummary());
-    const [totalProducts, totalOrders, totalUsers, totalCategories, orders, recentUsers] = await Promise.all([
+    const months = lastSixMonths();
+    const salesStart = new Date(`${months[0].key}-01T00:00:00.000Z`);
+    const [
+      totalProducts,
+      totalOrders,
+      totalUsers,
+      totalCategories,
+      revenueResult,
+      salesResult,
+      orderStatusResult,
+    ] = await Promise.all([
       Product.countDocuments(),
       Order.countDocuments(),
       User.countDocuments({ role: 'user' }),
       Category.countDocuments(),
-      Order.find().populate('user', 'name email').sort('-createdAt').limit(50),
-      User.find({ role: 'user' }).select('-password').sort('-createdAt').limit(5),
+      Order.aggregate([
+        { $match: { orderStatus: { $nin: excludedSalesStatuses } } },
+        { $group: { _id: null, totalRevenue: { $sum: { $ifNull: ['$total', 0] } } } },
+      ]),
+      Order.aggregate([
+        { $match: { createdAt: { $gte: salesStart }, orderStatus: { $nin: excludedSalesStatuses } } },
+        { $group: { _id: { $dateToString: { format: '%Y-%m', date: '$createdAt' } }, revenue: { $sum: { $ifNull: ['$total', 0] } }, orders: { $sum: 1 } } },
+        { $sort: { _id: 1 } },
+      ]),
+      Order.aggregate([{ $group: { _id: '$orderStatus', count: { $sum: 1 } } }]),
     ]);
-    const totalRevenue = orders.reduce((sum, order) => sum + Number(order.total || 0), 0);
-    const pendingOrders = orders.filter((order) => ['placed', 'pending', 'confirmed'].includes(order.orderStatus)).length;
+    const totalRevenue = revenueResult[0]?.totalRevenue || 0;
+    const salesMap = new Map(salesResult.map((item) => [item._id, item]));
+    const statusMap = new Map(orderStatusResult.map((item) => [item._id || 'placed', item.count]));
+    const pendingOrders = ['placed', 'pending', 'confirmed'].reduce((sum, status) => sum + (statusMap.get(status) || 0), 0);
     res.json({
       totalProducts,
       totalOrders,
@@ -72,11 +107,8 @@ exports.dashboard = async (req, res, next) => {
       totalCategories,
       totalRevenue,
       pendingOrders,
-      salesOverview: [{ month: 'Jan', revenue: totalRevenue * 0.2 }, { month: 'Feb', revenue: totalRevenue * 0.3 }, { month: 'Mar', revenue: totalRevenue * 0.5 }],
-      ordersOverview: ['pending', 'confirmed', 'packed', 'shipped', 'delivered', 'cancelled'].map((status) => ({ status, count: orders.filter((order) => order.orderStatus === status).length })),
-      topSellingProducts: [],
-      recentOrders: orders.slice(0, 5),
-      recentUsers: recentUsers.map(serializeUser),
+      salesOverview: months.map(({ key, month }) => ({ month, revenue: salesMap.get(key)?.revenue || 0, orders: salesMap.get(key)?.orders || 0 })),
+      generatedAt: new Date().toISOString(),
     });
   } catch (error) {
     next(error);
@@ -157,11 +189,26 @@ exports.updateOrder = async (req, res, next) => {
 
 exports.listUsers = async (req, res, next) => {
   try {
-    if (!isMongoReady()) return res.json(demoStore.listUsers());
+    if (!isMongoReady()) return res.json(demoStore.listUsers().filter((user) => user.role === 'user'));
     const users = await User.find({ role: 'user' }).select('-password').sort('-createdAt');
     const counts = await Order.aggregate([{ $group: { _id: '$user', ordersCount: { $sum: 1 } } }]);
     const countMap = new Map(counts.map((item) => [String(item._id), item.ordersCount]));
     res.json(users.map((user) => ({ ...serializeUser(user), ordersCount: countMap.get(String(user._id)) || 0, status: user.isBlocked ? 'blocked' : 'active', createdAt: user.createdAt })));
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.userStatistics = async (req, res, next) => {
+  try {
+    if (!isMongoReady()) return res.json(demoStore.userStatistics());
+    const [registeredUsers, loggedInUsers, activeUsers, blockedUsers] = await Promise.all([
+      User.countDocuments({ role: 'user' }),
+      User.countDocuments({ role: 'user', lastLoginAt: { $ne: null } }),
+      User.countDocuments({ role: 'user', isBlocked: false }),
+      User.countDocuments({ role: 'user', isBlocked: true }),
+    ]);
+    res.json({ registeredUsers, loggedInUsers, activeUsers, blockedUsers, generatedAt: new Date().toISOString() });
   } catch (error) {
     next(error);
   }

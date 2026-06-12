@@ -7,6 +7,7 @@ import Inventory2Icon from '@mui/icons-material/Inventory2';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import LogoutIcon from '@mui/icons-material/Logout';
 import RateReviewIcon from '@mui/icons-material/RateReview';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import SaveIcon from '@mui/icons-material/Save';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
@@ -17,6 +18,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import useAuth from '../hooks/useAuth';
 import api from '../services/api';
+import { colors } from '../styles/theme';
 import formatCurrency from '../utils/formatCurrency';
 
 const menu = [
@@ -81,6 +83,7 @@ export default function AdminDashboard() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
+  const [userStats, setUserStats] = useState(null);
   const [categories, setCategories] = useState([]);
   const [coupons, setCoupons] = useState([]);
   const [reviews, setReviews] = useState([]);
@@ -92,15 +95,25 @@ export default function AdminDashboard() {
   const [couponForm, setCouponForm] = useState(emptyCoupon);
   const [userForm, setUserForm] = useState({ name: '', email: '', phone: '', status: 'active' });
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setNotice({ type: '', text: '' });
+  const load = useCallback(async ({ silent = false } = {}) => {
+    if (!silent) {
+      setLoading(true);
+      setNotice({ type: '', text: '' });
+    }
     try {
+      if (active === 'users') {
+        const [{ data: userData }, { data: statistics }] = await Promise.all([
+          api.get('/admin/users'),
+          api.get('/admin/users/statistics'),
+        ]);
+        setUsers(userData);
+        setUserStats(statistics);
+        return;
+      }
       const { data } = await api.get(`/admin/${active === 'dashboard' ? 'dashboard' : active}`);
       if (active === 'dashboard') setDashboard(data);
       if (active === 'products') setProducts(data);
       if (active === 'orders') setOrders(data);
-      if (active === 'users') setUsers(data);
       if (active === 'categories') setCategories(data);
       if (active === 'coupons') setCoupons(data);
       if (active === 'reviews') setReviews(data);
@@ -108,13 +121,27 @@ export default function AdminDashboard() {
     } catch (error) {
       setNotice({ type: 'error', text: error.response?.data?.message || 'Admin data could not be loaded.' });
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [active]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    if (!['dashboard', 'users'].includes(active)) return undefined;
+    const refresh = () => load({ silent: true });
+    const interval = window.setInterval(refresh, 15000);
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') refresh();
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [active, load]);
 
   const closeDialog = () => setDialog({ type: '', item: null });
 
@@ -212,14 +239,15 @@ export default function AdminDashboard() {
 
   const renderDashboard = () => (
     <Stack spacing={3}>
+      <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'center' }} spacing={1}>
+        <Box>
+          <Typography variant="h6">Dashboard Overview</Typography>
+          <Typography variant="caption" color="text.secondary">Last updated {dashboard?.generatedAt ? new Date(dashboard.generatedAt).toLocaleTimeString() : 'just now'}</Typography>
+        </Box>
+        <Button variant="outlined" startIcon={<RefreshIcon />} onClick={() => load()}>Refresh data</Button>
+      </Stack>
       <Grid container spacing={2}>{stats.map(([label, value]) => <Grid item xs={12} sm={6} md={4} key={label}><Paper variant="outlined" sx={{ p: 2 }}><Typography color="text.secondary">{label}</Typography><Typography variant="h4" fontWeight={900}>{value}</Typography></Paper></Grid>)}</Grid>
-      <Grid container spacing={2}>
-        <Grid item xs={12} lg={6}><Chart title="Sales Overview" data={dashboard?.salesOverview || []} dataKey="revenue" /></Grid>
-        <Grid item xs={12} lg={6}><Chart title="Orders Overview" data={dashboard?.ordersOverview || []} dataKey="count" xKey="status" /></Grid>
-        <Grid item xs={12} lg={6}><Chart title="Top Selling Products" data={dashboard?.topSellingProducts || []} dataKey="sold" xKey="name" /></Grid>
-        <Grid item xs={12} lg={6}><Recent title="Recent Orders" rows={dashboard?.recentOrders || []} render={(order) => `${idOf(order)} - ${formatCurrency(order.total || 0)}`} /></Grid>
-        <Grid item xs={12} lg={6}><Recent title="Recent Users" rows={dashboard?.recentUsers || []} render={(user) => `${user.name || 'User'} - ${user.email || ''}`} /></Grid>
-      </Grid>
+      <Chart title="Sales Overview" data={dashboard?.salesOverview || []} dataKey="revenue" color={colors.primary} valueFormatter={(value) => formatCurrency(value)} />
     </Stack>
   );
 
@@ -243,9 +271,23 @@ export default function AdminDashboard() {
 
   const renderUsers = () => (
     <Stack spacing={2}>
-      <Typography variant="h6">Users Management</Typography>
-      <TableWrap heads={['User Name', 'Email', 'Phone', 'Orders Count', 'Join Date', 'Status', 'Actions']}>
-        {users.map((user) => <TableRow key={idOf(user)}><TableCell>{user.name}</TableCell><TableCell>{user.email}</TableCell><TableCell>{user.phone}</TableCell><TableCell>{user.ordersCount || 0}</TableCell><TableCell>{dateText(user.createdAt)}</TableCell><TableCell><Chip label={user.status || 'active'} color={statusColor(user.status || 'active')} /></TableCell><TableCell><IconButton onClick={() => setDialog({ type: 'user-details', item: user })}><VisibilityIcon /></IconButton><IconButton onClick={() => openUser(user)}><EditIcon /></IconButton><Button size="small" onClick={() => api.put(`/admin/users/${idOf(user)}`, { status: user.status === 'blocked' ? 'active' : 'blocked' }).then(load)}>{user.status === 'blocked' ? 'Unblock' : 'Block'}</Button><IconButton color="error" onClick={() => remove('users', user)}><DeleteIcon /></IconButton></TableCell></TableRow>)}
+      <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'center' }} spacing={1}>
+        <Box>
+          <Typography variant="h6">Users Management</Typography>
+          <Typography variant="caption" color="text.secondary">Last updated {userStats?.generatedAt ? new Date(userStats.generatedAt).toLocaleTimeString() : 'just now'}</Typography>
+        </Box>
+        <Button variant="outlined" startIcon={<RefreshIcon />} onClick={() => load()}>Refresh users</Button>
+      </Stack>
+      <Grid container spacing={2}>
+        {[
+          ['Registered Users', userStats?.registeredUsers ?? users.length],
+          ['Logged-in Users', userStats?.loggedInUsers ?? 0],
+          ['Active Users', userStats?.activeUsers ?? 0],
+          ['Blocked Users', userStats?.blockedUsers ?? 0],
+        ].map(([label, value]) => <Grid item xs={12} sm={6} lg={3} key={label}><Paper variant="outlined" sx={{ p: 2 }}><Typography color="text.secondary">{label}</Typography><Typography variant="h4" fontWeight={900}>{value}</Typography></Paper></Grid>)}
+      </Grid>
+      <TableWrap heads={['User Name', 'Email', 'Phone', 'Orders Count', 'Join Date', 'Last Login', 'Status', 'Actions']}>
+        {users.map((user) => <TableRow key={idOf(user)}><TableCell>{user.name}</TableCell><TableCell>{user.email}</TableCell><TableCell>{user.phone}</TableCell><TableCell>{user.ordersCount || 0}</TableCell><TableCell>{dateText(user.createdAt)}</TableCell><TableCell>{user.lastLoginAt ? dateText(user.lastLoginAt) : 'Never'}</TableCell><TableCell><Chip label={user.status || 'active'} color={statusColor(user.status || 'active')} /></TableCell><TableCell><IconButton onClick={() => openUser(user)}><EditIcon /></IconButton><IconButton color="error" onClick={() => remove('users', user)}><DeleteIcon /></IconButton></TableCell></TableRow>)}
       </TableWrap>
     </Stack>
   );
@@ -330,12 +372,8 @@ function StatusSelect({ value, options, onChange }) {
   return <Select size="small" value={value} onChange={(event) => onChange(event.target.value)}>{options.map((option) => <MenuItem key={option} value={option}>{option}</MenuItem>)}</Select>;
 }
 
-function Chart({ title, data, dataKey, xKey = 'month' }) {
-  return <Paper variant="outlined" sx={{ p: 2, height: 320 }}><Typography fontWeight={900} sx={{ mb: 1 }}>{title}</Typography><ResponsiveContainer width="100%" height="85%"><BarChart data={data}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey={xKey} /><YAxis /><Tooltip /><Legend /><Bar dataKey={dataKey} fill="#2563EB" radius={[6, 6, 0, 0]} /></BarChart></ResponsiveContainer></Paper>;
-}
-
-function Recent({ title, rows, render }) {
-  return <Paper variant="outlined" sx={{ p: 2, minHeight: 220 }}><Typography fontWeight={900} sx={{ mb: 1 }}>{title}</Typography><Stack spacing={1}>{rows.length ? rows.map((row) => <Paper key={idOf(row) || render(row)} variant="outlined" sx={{ p: 1.25 }}>{render(row)}</Paper>) : <Alert severity="info">No records yet.</Alert>}</Stack></Paper>;
+function Chart({ title, data, dataKey, xKey = 'month', color = colors.primary, valueFormatter }) {
+  return <Paper variant="outlined" sx={{ p: 2, height: 320 }}><Typography fontWeight={900} sx={{ mb: 1 }}>{title}</Typography><ResponsiveContainer width="100%" height="85%"><BarChart data={data}><CartesianGrid strokeDasharray="3 3" stroke={colors.background} /><XAxis dataKey={xKey} tick={{ fontSize: 11 }} interval={0} angle={data.length > 6 ? -25 : 0} textAnchor={data.length > 6 ? 'end' : 'middle'} height={data.length > 6 ? 60 : 30} /><YAxis tick={{ fontSize: 11 }} /><Tooltip formatter={(value) => valueFormatter ? valueFormatter(value) : value} /><Legend /><Bar dataKey={dataKey} fill={color} radius={[6, 6, 0, 0]} /></BarChart></ResponsiveContainer></Paper>;
 }
 
 function DetailBlock({ title, lines }) {
