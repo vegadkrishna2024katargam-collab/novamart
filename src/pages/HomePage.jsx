@@ -20,6 +20,7 @@ export default function HomePage() {
   }, []);
   const { data: apiProducts = [], loading: productsLoading } = useFetch(fetchProducts, []);
 
+  // Defensive check: ensure displayProducts is always an array
   const displayProducts = Array.isArray(apiProducts)
     ? apiProducts
     : Array.isArray(apiProducts?.products)
@@ -27,23 +28,28 @@ export default function HomePage() {
       : products;
 
   const tabProducts = useMemo(
-    () =>
-      displayProducts
+    () => {
+      // Ensure displayProducts is an array before slicing
+      const productsArray = Array.isArray(displayProducts) ? displayProducts : [];
+      return productsArray
         .slice(tab, tab + 4)
         .concat(
-          displayProducts.slice(
+          productsArray.slice(
             0,
-            Math.max(0, 4 - (displayProducts.length - tab))
+            Math.max(0, 4 - (productsArray.length - tab))
           )
-        ),
+        );
+    },
     [displayProducts, tab]
   );
 
-  const featuredProducts = displayProducts.slice(0, 4);
+  // Ensure displayProducts is an array before slicing
+  const featuredProducts = Array.isArray(displayProducts) ? displayProducts.slice(0, 4) : [];
+
   return (
     <Box>
       <Container maxWidth="xl" sx={{ py: { xs: 4, md: 6 } }}>
-        <Paper sx={{ position: 'relative', overflow: 'hidden', p: { xs: 3, md: 8 }, minHeight: 480, display: 'grid', alignItems: 'center', background: 'linear-gradient(135deg, rgba(108,99,255,.95), rgba(139,92,246,.86)), url(https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1800&q=80) center/cover', color: 'white' }}>
+        <Paper sx={{ position: 'relative', overflow: 'hidden', p: { xs: 3, md: 8 }, minHeight: 480, display: 'grid', alignItems: 'center', background: 'linear-gradient(135deg, rgba(108,99,255,.95), rgba(124,58,202,.95))' }}>
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={6}>
               <Chip label="Festival sale live" sx={{ bgcolor: 'rgba(255,255,255,.18)', color: 'white', fontWeight: 800 }} />
@@ -137,7 +143,7 @@ export default function HomePage() {
             </Grid>
             <Grid item xs={12} md={7}>
               <Grid container spacing={2}>
-                {displayProducts.slice(0, 3).map((product) => (
+                {(Array.isArray(displayProducts) ? displayProducts : []).slice(0, 3).map((product) => (
                   <Grid item xs={12} sm={4} key={product._id || product.id}>
                     <Paper sx={{ p: 2 }}>
                       <Typography fontWeight={800}>{product.name}</Typography>
@@ -152,18 +158,20 @@ export default function HomePage() {
         </Paper>
 
         <Grid container spacing={3}>
-          {[{ icon: LocalShippingIcon, title: 'Free shipping', text: 'On orders above $50' }, { icon: PercentIcon, title: 'Big discounts', text: 'Daily curated offers' }, { icon: VerifiedIcon, title: 'Secure payments', text: 'JWT protected checkout' }].map(({ icon: Icon, title, text }) => (
-            <Grid item xs={12} md={4} key={title}><Paper sx={{ p: 3, display: 'flex', gap: 2 }}><Icon color="primary" /><Box><Typography fontWeight={800}>{title}</Typography><Typography color="text.secondary">{text}</Typography></Box></Paper></Grid>
-          ))}
+          {[{ icon: LocalShippingIcon, title: 'Free shipping', text: 'On orders above $50' }, { icon: PercentIcon, title: 'Big discounts', text: 'Daily curated offers' }, { icon: VerifiedIcon, title: 'Verified safe', text: 'Secure checkout' }].map(
+            ({ icon: Icon, title, text }) => (
+              <Grid item xs={12} md={4} key={title}><Paper sx={{ p: 3, display: 'flex', gap: 2 }}><Icon color="primary" /><Box><Typography fontWeight={800}>{title}</Typography><Typography color="text.secondary" variant="body2">{text}</Typography></Box></Paper></Grid>
+            )
+          )}
         </Grid>
 
         <Box sx={{ py: 7 }}>
           <SectionHeader eyebrow="Social proof" title="Customers love NovaMart" />
-          <Grid container spacing={3}>{testimonials.map((review) => <Grid item xs={12} md={4} key={review.name}><Card><CardContent><Rating value={review.rating} readOnly size="small" /><Typography sx={{ my: 2 }}>{review.text}</Typography><Typography fontWeight={800}>{review.name}</Typography><Typography color="text.secondary">{review.role}</Typography></CardContent></Card></Grid>)}</Grid>
+          <Grid container spacing={3}>{testimonials.map((review) => <Grid item xs={12} md={4} key={review.name}><Card><CardContent><Rating value={review.rating} readOnly size="small" /><Typography fontWeight={800} sx={{ mt: 1 }}>{review.name}</Typography><Typography color="text.secondary" variant="body2">{review.role}</Typography><Typography sx={{ mt: 1.5 }}>{review.text}</Typography></CardContent></Card></Grid>)}</Grid>
         </Box>
 
         <Paper sx={{ p: 3, overflow: 'hidden', mb: 7 }}>
-          <Stack direction="row" spacing={5} sx={{ width: 'max-content', animation: 'scrollBrands 18s linear infinite', '@keyframes scrollBrands': { from: { transform: 'translateX(0)' }, to: { transform: 'translateX(-50%)' } } }}>
+          <Stack direction="row" spacing={5} sx={{ width: 'max-content', animation: 'scrollBrands 18s linear infinite', '@keyframes scrollBrands': { from: { transform: 'translateX(0)' }, to: { transform: 'translateX(-100%)' } } }}>
             {[...brands, ...brands].map((brand, index) => <Typography key={`${brand}-${index}`} variant="h5" fontWeight={900} color="text.secondary">{brand}</Typography>)}
           </Stack>
         </Paper>
