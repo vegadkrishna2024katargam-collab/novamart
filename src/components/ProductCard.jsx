@@ -9,10 +9,9 @@ import useCart from '../hooks/useCart';
 import useWishlist from '../hooks/useWishlist';
 import {
   getCategoryName,
-  getFallbackProductImage,
   getProductId,
-  getProductImages,
   normalizeProduct,
+
   toCartProduct,
 } from '../utils/productUtils.js';
 
@@ -25,7 +24,7 @@ export default function ProductCard({ product }) {
   const productId = getProductId(displayProduct);
   const detailPath = productId ? `/product/${productId}` : '/products';
 
-  const images = getProductImages(displayProduct);
+
 
 
   const category = getCategoryName(displayProduct.category);
@@ -85,8 +84,8 @@ export default function ProductCard({ product }) {
       <Box sx={{ position: 'relative', aspectRatio: '4 / 3', bgcolor: 'background.default' }}>
         <Chip label={badge} color="secondary" size="small" sx={{ position: 'absolute', top: 12, left: 12, fontWeight: 800 }} />
 
-
         <Stack direction="row" spacing={1} sx={{ position: 'absolute', top: 10, right: 10 }}>
+
           <Tooltip title="Wishlist">
             <IconButton
               onClick={openWishlist}
