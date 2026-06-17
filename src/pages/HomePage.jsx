@@ -16,8 +16,11 @@ export default function HomePage() {
   const [tab, setTab] = useState(0);
   const fetchProducts = useCallback(async () => {
     const { data } = await api.get('/products');
-    return normalizeProducts(data);
+    // normalizeProducts is not needed here because API products are handled defensively
+    // by the displayProducts fallback logic below.
+    return data;
   }, []);
+
   const { data: apiProducts = [], loading: productsLoading } = useFetch(fetchProducts, []);
 
   // Defensive check: ensure displayProducts is always an array

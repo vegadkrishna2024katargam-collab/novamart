@@ -9,7 +9,7 @@ import api from '../services/api.js';
 import { products as demoProducts } from '../data/demoData.js';
 import useCart from '../hooks/useCart.js';
 import formatCurrency from '../utils/formatCurrency.js';
-import { getCategoryName, getProductImages, toCartProduct } from '../utils/productUtils.js';
+import { getCategoryName, getProductId, getProductImages, normalizeProduct, toCartProduct } from '../utils/productUtils.js';
 
 export default function ProductDetailsPage() {
   const { id } = useParams();
@@ -20,14 +20,6 @@ export default function ProductDetailsPage() {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  const normalizeProductData = (data) => {
-    const isPlainObject = (value) => value && typeof value === 'object' && !Array.isArray(value);
-    if (!isPlainObject(data)) return null;
-    if (isPlainObject(data.product)) return normalizeProductData(data.product);
-    if (isPlainObject(data.data)) return normalizeProductData(data.data);
-    return data;
-  };
 
   useEffect(() => {
     let active = true;
@@ -42,20 +34,37 @@ export default function ProductDetailsPage() {
         const { data } = await api.get(`/products/${id}`);
         if (!active) return;
 
-        const productData = normalizeProductData(data);
+        // API responses can be inconsistent: sometimes a single product,
+        // sometimes a wrapped object, or even an array. Normalize by
+        // picking the matching product when possible.
+        let productSource = data;
+        const pickMatch = (arr) => (Array.isArray(arr) ? arr.find((item) => String(getProductId(item) || item?.id || item?._id) === String(id)) : null);
+
+        if (Array.isArray(productSource)) {
+          productSource = pickMatch(productSource) || productSource[0];
+        } else if (Array.isArray(productSource?.products)) {
+          productSource = pickMatch(productSource.products) || productSource.products[0];
+        } else if (Array.isArray(productSource?.data)) {
+          productSource = pickMatch(productSource.data) || productSource.data[0];
+        } else if (Array.isArray(productSource?.result)) {
+          productSource = pickMatch(productSource.result) || productSource.result[0];
+        }
+
+        const productData = normalizeProduct(productSource || data);
         if (!productData) {
           throw new Error('Invalid product response');
         }
 
         setProduct(productData);
-
         const images = getProductImages(productData);
         setSelectedImage(images[0] || '');
         setQuantity(1);
       } catch (err) {
         if (!active) return;
 
-        const fallbackProduct = demoProducts.find((item) => String(item._id || item.id) === String(id));
+        const fallbackProduct = demoProducts
+          .map(normalizeProduct)
+          .find((item) => String(getProductId(item)) === String(id));
         if (fallbackProduct) {
           setProduct(fallbackProduct);
           setSelectedImage(getProductImages(fallbackProduct)[0] || '');
@@ -83,11 +92,11 @@ export default function ProductDetailsPage() {
     setSelectedImage((current) => (images.includes(current) ? current : images[0]));
   }, [images]);
 
-  const stockCount = product?.countInStock ?? product?.stock ?? 12;
+  const stockCount = product?.countInStock ?? product?.stock ?? 0;
   const inStock = stockCount > 0;
   const cartProduct = product ? toCartProduct(product, quantity) : null;
   const category = getCategoryName(product?.category);
-  const reviewCount = product?.numReviews || 0;
+  const reviewCount = product?.numReviews || product?.reviewCount || 0;
 
   const addSelectedToCart = () => {
     if (!cartProduct || !inStock) return;
@@ -185,7 +194,7 @@ export default function ProductDetailsPage() {
               {product.oldPrice ? <Typography variant="h5" color="text.secondary" sx={{ textDecoration: 'line-through' }}>{formatCurrency(product.oldPrice)}</Typography> : null}
             </Stack>
 
-            <Typography color="text.secondary" sx={{ fontSize: '1.05rem', lineHeight: 1.8 }}>{product.description}</Typography>
+            <Typography color="text.secondary" sx={{ fontSize: '1.05rem', lineHeight: 1.8 }}>{product.description || 'No description available for this product.'}</Typography>
 
             <Divider />
 

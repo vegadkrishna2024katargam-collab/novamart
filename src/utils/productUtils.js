@@ -1,15 +1,21 @@
 export function getProductId(product) {
-  return product?._id || product?.id;
+  return product?._id || product?.id || product?.productId || product?.sku;
 }
 
 export function getCategoryName(category) {
   if (!category) return 'General';
-  return typeof category === 'string' ? category : category.name || 'General';
+  return typeof category === 'string' ? category : category.name || category.title || 'General';
 }
 
 export function resolveImageUrl(image) {
   if (!image) return 'https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&w=1200&q=80';
+  if (typeof image === 'object') return resolveImageUrl(image.url || image.src || image.path || image.secure_url);
   if (image.startsWith('http') || image.startsWith('data:')) return image;
+  if (image.startsWith('/uploads/')) {
+    const apiBase = process.env.REACT_APP_API_URL || '';
+    const apiOrigin = apiBase.endsWith('/api') ? apiBase.slice(0, -4) : apiBase.replace(/\/api\/?$/, '');
+    return `${apiOrigin}${image}`;
+  }
   return image;
 }
 
@@ -63,21 +69,68 @@ export function getFallbackProductImage(product = {}) {
 }
 
 export function getProductImages(product) {
-  const images = Array.isArray(product?.images) ? product.images : [];
-  const primary = product?.image;
+  const images = Array.isArray(product?.images)
+    ? product.images
+    : String(product?.images || '').split(',').map((item) => item.trim()).filter(Boolean);
+  const primary = product?.image || product?.thumbnail || product?.featuredImage;
   const normalizedImages = [...new Set([primary, ...images].filter(Boolean))]
     .map(resolveImageUrl)
     .filter(Boolean);
   return normalizedImages.length ? normalizedImages : [getFallbackProductImage(product)];
 }
 
-export function toCartProduct(product, quantity = 1) {
-  const id = getProductId(product);
-  const images = getProductImages(product);
+export function unwrapProductResponse(data) {
+  const isPlainObject = (value) => value && typeof value === 'object' && !Array.isArray(value);
+  if (!isPlainObject(data)) return null;
+  if (isPlainObject(data.product)) return unwrapProductResponse(data.product);
+  if (isPlainObject(data.data)) return unwrapProductResponse(data.data);
+  if (isPlainObject(data.result)) return unwrapProductResponse(data.result);
+  return data;
+}
+
+export function unwrapProductListResponse(data) {
+  if (Array.isArray(data)) return data;
+  if (!data || typeof data !== 'object') return [];
+  if (Array.isArray(data.products)) return data.products;
+  if (Array.isArray(data.data)) return data.data;
+  if (Array.isArray(data.result)) return data.result;
+  return [];
+}
+
+export function normalizeProduct(product) {
+  const source = unwrapProductResponse(product);
+  if (!source) return null;
+  const id = getProductId(source);
+  const images = getProductImages(source);
   return {
-    ...product,
+    ...source,
     id,
-    category: getCategoryName(product?.category),
+    _id: source._id || id,
+    name: source.name || source.title || 'Product',
+    description: source.description || source.shortDescription || '',
+    category: getCategoryName(source.category),
+    price: Number(source.price ?? source.discountPrice ?? 0),
+    oldPrice: source.oldPrice ?? source.mrp ?? source.compareAtPrice,
+    rating: Number(source.rating ?? 0),
+    numReviews: Number(source.numReviews ?? source.reviewCount ?? 0),
+    countInStock: Number(source.countInStock ?? source.stockQuantity ?? source.stock ?? 0),
+    image: images[0],
+    images,
+  };
+}
+
+export function normalizeProducts(products) {
+  return unwrapProductListResponse(products).map(normalizeProduct).filter(Boolean);
+}
+
+export function toCartProduct(product, quantity = 1) {
+  const normalizedProduct = normalizeProduct(product) || product;
+  const id = getProductId(normalizedProduct);
+  const images = getProductImages(normalizedProduct);
+  return {
+    ...normalizedProduct,
+    id,
+    category: getCategoryName(normalizedProduct?.category),
     image: images[0],
     images,
     qty: quantity,

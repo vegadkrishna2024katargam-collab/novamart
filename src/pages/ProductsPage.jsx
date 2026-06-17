@@ -8,7 +8,7 @@ import SectionHeader from '../components/SectionHeader.jsx';
 import { categories, products as demoProducts } from '../data/demoData';
 import useFetch from '../hooks/useFetch.js';
 import api from '../services/api.js';
-import { getCategoryName } from '../utils/productUtils.js';
+import { getCategoryName, normalizeProducts } from '../utils/productUtils.js';
 
 const validCategoryName = (value) => (categories.some((item) => item.name === value) ? value : 'All');
 
@@ -22,10 +22,10 @@ export default function ProductsPage() {
   const productsPerPage = 12;
   const fetchProducts = useCallback(async () => {
     const { data } = await api.get('/products');
-    return data;
+    return normalizeProducts(data);
   }, []);
   const { data: products = [], loading } = useFetch(fetchProducts, []);
-  const displayProducts = products.length ? products : demoProducts;
+  const displayProducts = products.length ? products : normalizeProducts(demoProducts);
 
   useEffect(() => {
     setQuery(searchParams.get('search') || '');

@@ -15,7 +15,7 @@ import useWishlist from '../hooks/useWishlist';
 import { useThemeMode } from '../context/ThemeModeContext.jsx';
 import api from '../services/api.js';
 import { dashboardPathFor, isAdminUser } from '../utils/authRole';
-import { getCategoryName, getProductId } from '../utils/productUtils.js';
+import { getCategoryName, getProductId, normalizeProducts } from '../utils/productUtils.js';
 
 const publicLinks = [
   { label: 'Home', to: '/' },
@@ -34,7 +34,7 @@ export default function Navbar() {
   const { mode, toggleMode } = useThemeMode();
   const categoryParam = searchParams.get('category');
   const activeCategory = categories.some((category) => category.name === categoryParam) ? categoryParam : 'All';
-  const productSuggestions = useMemo(() => headerProducts.map((product) => ({
+  const productSuggestions = useMemo(() => normalizeProducts(headerProducts).map((product) => ({
     label: product.name,
     category: getCategoryName(product.category),
     product,
@@ -48,7 +48,8 @@ export default function Navbar() {
     const controller = new AbortController();
     api.get('/products', { signal: controller.signal })
       .then(({ data }) => {
-        if (active && Array.isArray(data) && data.length) setHeaderProducts(data);
+        const nextProducts = normalizeProducts(data);
+        if (active && nextProducts.length) setHeaderProducts(nextProducts);
       })
       .catch(() => {
         if (active) setHeaderProducts(products);
@@ -80,7 +81,7 @@ export default function Navbar() {
       return;
     }
 
-    const exactProduct = headerProducts.find((product) => product.name.toLowerCase() === query.toLowerCase());
+    const exactProduct = normalizeProducts(headerProducts).find((product) => product.name.toLowerCase() === query.toLowerCase());
     if (exactProduct) {
       const exactProductId = getProductId(exactProduct);
       if (exactProductId) {
