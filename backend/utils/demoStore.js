@@ -29,9 +29,12 @@ function loadDemoProducts() {
   try {
     const demoDataPath = path.join(__dirname, '..', '..', 'src', 'data', 'demoData.js');
     const source = fs.readFileSync(demoDataPath, 'utf8');
+
+    // Extract the exported products array from the ESM file without importing it.
     const marker = 'export const products = [';
     const start = source.indexOf(marker);
     if (start === -1) return fallback;
+
     const arrayStart = source.indexOf('[', start);
     let depth = 0;
     let end = arrayStart;
@@ -46,23 +49,43 @@ function loadDemoProducts() {
         }
       }
     }
+
     const arrayText = source.slice(arrayStart, end);
+
+    // demoData.js is a JS module with object literals, so Function() works here.
     const parsed = Function(`"use strict"; return (${arrayText});`)();
-    return parsed.map((product) => ({
-      ...product,
-      _id: product._id || product.id,
-      id: product.id || product._id,
-      countInStock: Number(product.countInStock ?? 25),
-      status: product.status || 'active',
-      colors: Array.isArray(product.colors) ? product.colors : [],
-      sizes: Array.isArray(product.sizes) ? product.sizes : [],
-      createdAt: product.createdAt || new Date().toISOString(),
-      updatedAt: product.updatedAt || new Date().toISOString(),
-    }));
+
+    // Ensure all products have images[] (frontend expects images array via productUtils)
+    return parsed.map((product, idx) => {
+      const images = Array.isArray(product.images)
+        ? product.images
+        : typeof product.image === 'string' && product.image
+          ? [product.image]
+          : [];
+
+      const id = product.id || product._id || `prod-${idx + 1}`;
+
+      return {
+        ...product,
+        _id: product._id || id,
+        id,
+        images: images.length ? images : [fallback[0].images[0]],
+        countInStock: Number(product.countInStock ?? product.stock ?? 25),
+        // backend supports both brand and category
+        brand: product.brand || product.brandName || product.seller || product.name.split(' ')[0] || '',
+        numReviews: Number(product.numReviews ?? product.reviewCount ?? product.reviews ?? 120),
+        status: product.status || 'active',
+        colors: Array.isArray(product.colors) ? product.colors : [],
+        sizes: Array.isArray(product.sizes) ? product.sizes : [],
+        createdAt: product.createdAt || new Date().toISOString(),
+        updatedAt: product.updatedAt || new Date().toISOString(),
+      };
+    });
   } catch (error) {
     return fallback;
   }
 }
+
 
 const products = loadDemoProducts();
 const coupons = [
