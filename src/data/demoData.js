@@ -57,8 +57,7 @@ export const products = [
     images: mkImages(
       'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=1200&q=80',
       [
-        'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=1200&q=80',
-        'https://images.unsplash.com/photo-1528701800489-20be3c2ea3e7?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=1200&q=80',,
       ]
     ),
     description: 'Lightweight training shoe built for all-day comfort and a stable, springy ride on pavement or track.',
