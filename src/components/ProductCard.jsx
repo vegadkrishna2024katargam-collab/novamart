@@ -11,9 +11,9 @@ import {
   getCategoryName,
   getProductId,
   normalizeProduct,
-
   toCartProduct,
 } from '../utils/productUtils.js';
+
 
 export default function ProductCard({ product }) {
   const navigate = useNavigate();
@@ -81,7 +81,17 @@ export default function ProductCard({ product }) {
         '&:hover': { transform: 'translateY(-6px)', boxShadow: '0 22px 50px rgba(17,24,39,.14)' },
       }}
     >
-      <Box sx={{ position: 'relative', aspectRatio: '4 / 3', bgcolor: 'background.default' }}>
+      <Box sx={{ position: 'relative', aspectRatio: '4 / 3', bgcolor: 'background.default', overflow: 'hidden' }}>
+        <Box
+          component="img"
+          // only the main listing image should appear on the card
+          src={displayProduct.image}
+          alt={displayProduct.name}
+          sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          onError={(event) => {
+            event.currentTarget.src = 'https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&w=1200&q=80';
+          }}
+        />
         <Chip label={badge} color="secondary" size="small" sx={{ position: 'absolute', top: 12, left: 12, fontWeight: 800 }} />
 
         <Stack direction="row" spacing={1} sx={{ position: 'absolute', top: 10, right: 10 }}>
