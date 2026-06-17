@@ -26,7 +26,7 @@ export default function ProductCard({ product }) {
   const detailPath = productId ? `/product/${productId}` : '/products';
 
   const images = getProductImages(displayProduct);
-  const primaryImage = images?.[0] || getFallbackProductImage(displayProduct);
+
 
   const category = getCategoryName(displayProduct.category);
   const wished = isWishlisted(productId);
