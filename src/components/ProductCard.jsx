@@ -83,10 +83,8 @@ export default function ProductCard({ product }) {
       }}
     >
       <Box sx={{ position: 'relative', aspectRatio: '4 / 3', bgcolor: 'background.default' }}>
-      <Box component="img" src={primaryImage} alt={displayProduct.name} loading="lazy" decoding="async" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-
-
         <Chip label={badge} color="secondary" size="small" sx={{ position: 'absolute', top: 12, left: 12, fontWeight: 800 }} />
+
 
         <Stack direction="row" spacing={1} sx={{ position: 'absolute', top: 10, right: 10 }}>
           <Tooltip title="Wishlist">
@@ -149,21 +147,7 @@ export default function ProductCard({ product }) {
           />
         </Stack>
 
-        {images.length > 1 ? (
-          <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
-            {images.slice(0, 3).map((img) => (
-              <Box
-                key={img}
-                component="img"
-                src={img}
-                alt={`${displayProduct.name} thumbnail`}
-                loading="lazy"
-                decoding="async"
-                sx={{ width: 36, height: 26, objectFit: 'cover', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}
-              />
-            ))}
-          </Stack>
-        ) : null}
+
 
         <Button fullWidth variant="contained" startIcon={<ShoppingCartIcon />} onClick={addToCartFromCard}>
           Add to cart
