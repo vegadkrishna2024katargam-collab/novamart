@@ -16,7 +16,7 @@ export default function HomePage() {
   const [tab, setTab] = useState(0);
   const fetchProducts = useCallback(async () => {
     const { data } = await api.get('/products');
-    return data;
+    return normalizeProducts(data);
   }, []);
   const { data: apiProducts = [], loading: productsLoading } = useFetch(fetchProducts, []);
 
