@@ -157,7 +157,6 @@ export default function ProductDetailsPage() {
             <Stack direction="row" spacing={1} flexWrap="wrap">
               <Chip label={category} color="primary" variant="outlined" />
 
-              {product.brand ? <Chip label={product.brand} variant="outlined" /> : null}
               {product.discount ? <Chip label={`${product.discount}% off`} color="secondary" /> : null}
 
             </Stack>
