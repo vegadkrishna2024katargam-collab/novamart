@@ -85,12 +85,7 @@ export default function ProductDetailsPage() {
     };
   }, [id]);
 
-  const images = useMemo(() => getProductImages(product), [product]);
 
-  useEffect(() => {
-    if (!images.length) return;
-    setSelectedImage((current) => (images.includes(current) ? current : images[0]));
-  }, [images]);
 
   const stockCount = product?.countInStock ?? product?.stock ?? 0;
   const inStock = stockCount > 0;
@@ -152,25 +147,7 @@ export default function ProductDetailsPage() {
               </Box>
             </Paper>
 
-            <Grid container spacing={1.5}>
-              {images.map((image) => (
-                <Grid item xs={3} sm={2.4} key={image}>
-                  <IconButton
-                    onClick={() => setSelectedImage(image)}
-                    sx={{
-                      width: '100%',
-                      aspectRatio: '1 / 1',
-                      p: 0.5,
-                      border: '2px solid',
-                      borderColor: selectedImage === image ? 'primary.main' : 'divider',
-                      borderRadius: 1.5,
-                    }}
-                  >
-                    <Box component="img" src={image} alt={product.name} sx={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 1 }} />
-                  </IconButton>
-                </Grid>
-              ))}
-            </Grid>
+
           </Stack>
         </Grid>
 
