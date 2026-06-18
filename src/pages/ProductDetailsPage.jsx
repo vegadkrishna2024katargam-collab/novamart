@@ -2,7 +2,8 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { Box, Button, Chip, CircularProgress, Container, Divider, Grid, IconButton, Paper, Rating, Stack, Typography } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
+
 import { useNavigate, useParams } from 'react-router-dom';
 import EmptyState from '../components/EmptyState.jsx';
 import api from '../services/api.js';
@@ -155,7 +156,7 @@ export default function ProductDetailsPage() {
           <Stack spacing={2.5}>
             <Stack direction="row" spacing={1} flexWrap="wrap">
               <Chip label={category} color="primary" variant="outlined" />
-              
+
               {product.discount ? <Chip label={`${product.discount}% off`} color="secondary" /> : null}
             </Stack>
 
