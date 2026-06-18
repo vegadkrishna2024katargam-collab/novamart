@@ -162,43 +162,7 @@ export default function ProductDetailsPage() {
               </Box>
             </Paper>
 
-            {/* Product Thumbnail Gallery */}
-            {images.length > 1 && (
-              <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap', justifyContent: 'center' }}>
-                {images.map((imgUrl, index) => (
-                  <Paper
-                    key={index}
-                    onClick={() => setSelectedImage(imgUrl)}
-                    sx={{
-                      width: 80,
-                      height: 80,
-                      overflow: 'hidden',
-                      borderRadius: 1.5,
-                      cursor: 'pointer',
-                      border: selectedImage === imgUrl ? '3px solid' : '2px solid transparent',
-                      borderColor: selectedImage === imgUrl ? 'primary.main' : 'divider',
-                      opacity: selectedImage === imgUrl ? 1 : 0.6,
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        opacity: 1,
-                        borderColor: selectedImage === imgUrl ? 'primary.main' : 'primary.light',
-                      },
-                    }}
-                  >
-                    <Box
-                      component="img"
-                      src={imgUrl}
-                      alt={`${product.name} view ${index + 1}`}
-                      sx={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                      }}
-                    />
-                  </Paper>
-                ))}
-              </Stack>
-            )}
+
           </Stack>
         </Grid>
 
