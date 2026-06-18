@@ -2,8 +2,7 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { Box, Button, Chip, CircularProgress, Container, Divider, Grid, IconButton, Paper, Rating, Stack, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
-
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import EmptyState from '../components/EmptyState.jsx';
 import api from '../services/api.js';
@@ -35,9 +34,6 @@ export default function ProductDetailsPage() {
         const { data } = await api.get(`/products/${id}`);
         if (!active) return;
 
-        // API responses can be inconsistent: sometimes a single product,
-        // sometimes a wrapped object, or even an array. Normalize by
-        // picking the matching product when possible.
         let productSource = data;
         const pickMatch = (arr) => (Array.isArray(arr) ? arr.find((item) => String(getProductId(item) || item?.id || item?._id) === String(id)) : null);
 
@@ -86,7 +82,24 @@ export default function ProductDetailsPage() {
     };
   }, [id]);
 
+  const images = useMemo(() => {
+    if (!product) return [];
+    const imgs = getProductImages(product);
+    // If product has colorVariants, include those images too
+    if (product.colorVariants && Array.isArray(product.colorVariants)) {
+      product.colorVariants.forEach((variant) => {
+        if (variant.image && !imgs.includes(variant.image)) {
+          imgs.push(variant.image);
+        }
+      });
+    }
+    return imgs;
+  }, [product]);
 
+  useEffect(() => {
+    if (!images.length) return;
+    setSelectedImage((current) => (images.includes(current) ? current : images[0]));
+  }, [images]);
 
   const stockCount = product?.countInStock ?? product?.stock ?? 0;
   const inStock = stockCount > 0;
@@ -131,6 +144,7 @@ export default function ProductDetailsPage() {
       <Grid container spacing={{ xs: 3, md: 5 }} alignItems="flex-start">
         <Grid item xs={12} md={6}>
           <Stack spacing={2}>
+            {/* Main Product Image */}
             <Paper sx={{ overflow: 'hidden', borderRadius: 2, bgcolor: 'background.default' }}>
               <Box sx={{ position: 'relative', aspectRatio: '1 / 1', overflow: 'hidden' }}>
                 <Box
@@ -148,7 +162,43 @@ export default function ProductDetailsPage() {
               </Box>
             </Paper>
 
-
+            {/* Product Thumbnail Gallery */}
+            {images.length > 1 && (
+              <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap', justifyContent: 'center' }}>
+                {images.map((imgUrl, index) => (
+                  <Paper
+                    key={index}
+                    onClick={() => setSelectedImage(imgUrl)}
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      overflow: 'hidden',
+                      borderRadius: 1.5,
+                      cursor: 'pointer',
+                      border: selectedImage === imgUrl ? '3px solid' : '2px solid transparent',
+                      borderColor: selectedImage === imgUrl ? 'primary.main' : 'divider',
+                      opacity: selectedImage === imgUrl ? 1 : 0.6,
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        opacity: 1,
+                        borderColor: selectedImage === imgUrl ? 'primary.main' : 'primary.light',
+                      },
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src={imgUrl}
+                      alt={`${product.name} view ${index + 1}`}
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      }}
+                    />
+                  </Paper>
+                ))}
+              </Stack>
+            )}
           </Stack>
         </Grid>
 
@@ -156,9 +206,7 @@ export default function ProductDetailsPage() {
           <Stack spacing={2.5}>
             <Stack direction="row" spacing={1} flexWrap="wrap">
               <Chip label={category} color="primary" variant="outlined" />
-
               {product.discount ? <Chip label={`${product.discount}% off`} color="secondary" /> : null}
-
             </Stack>
 
             <Typography variant="h3" sx={{ fontSize: { xs: '2rem', md: '3rem' } }}>{product.name}</Typography>

@@ -31,6 +31,11 @@ export const products = [
     numReviews: 1287,
     badge: '28% off',
     countInStock: 42,
+    colorVariants: [
+      { name: 'Red', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1200&q=80' },
+      { name: 'Blue', image: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=1200&q=80' },
+      { name: 'Black', image: 'https://images.unsplash.com/photo-1603808033192-082d6919d3e1?auto=format&fit=crop&w=1200&q=80' },
+    ],
     images: mkImages(
       'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1200&q=80',
       [
@@ -57,7 +62,7 @@ export const products = [
     images: mkImages(
       'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=1200&q=80',
       [
-        'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=1200&q=80',
+        'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=1200&q=80'
       ]
     ),
     description: 'Lightweight training shoe built for all-day comfort and a stable, springy ride on pavement or track.',
