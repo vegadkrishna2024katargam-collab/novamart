@@ -151,6 +151,9 @@ export default function ProductDetailsPage() {
                   component="img"
                   src={selectedImage}
                   alt={product.name}
+                  onError={(e) => {
+                    e.target.src = 'https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&w=1200&q=80';
+                  }}
                   sx={{
                     width: '100%',
                     height: '100%',
@@ -162,7 +165,46 @@ export default function ProductDetailsPage() {
               </Box>
             </Paper>
 
-
+            {/* Product Thumbnail Gallery - Only shown when valid images exist */}
+            {images && images.length > 1 && (
+              <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap', justifyContent: 'center' }}>
+                {images.map((imgUrl, index) => (
+                  <Paper
+                    key={index}
+                    onClick={() => setSelectedImage(imgUrl)}
+                    sx={{
+                      width: 72,
+                      height: 72,
+                      overflow: 'hidden',
+                      borderRadius: 1.5,
+                      cursor: 'pointer',
+                      border: selectedImage === imgUrl ? '3px solid' : '2px solid transparent',
+                      borderColor: selectedImage === imgUrl ? 'primary.main' : 'divider',
+                      opacity: selectedImage === imgUrl ? 1 : 0.55,
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        opacity: 1,
+                        borderColor: selectedImage === imgUrl ? 'primary.main' : 'primary.light',
+                      },
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src={imgUrl}
+                      alt={`${product.name} view ${index + 1}`}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      }}
+                    />
+                  </Paper>
+                ))}
+              </Stack>
+            )}
           </Stack>
         </Grid>
 

@@ -25,7 +25,7 @@ export default function ProductsPage() {
     return normalizeProducts(data);
   }, []);
   const { data: products = [], loading } = useFetch(fetchProducts, []);
-  const displayProducts = products.length ? products : normalizeProducts(demoProducts);
+  const displayProducts = products && products.length > 0 ? products : normalizeProducts(demoProducts);
 
   useEffect(() => {
     setQuery(searchParams.get('search') || '');

@@ -23,10 +23,10 @@ export default function HomePage() {
 
   const { data: apiProducts = [], loading: productsLoading } = useFetch(fetchProducts, []);
 
-  // Defensive check: ensure displayProducts is always an array
-  const displayProducts = Array.isArray(apiProducts)
+  // Defensive check: ensure displayProducts is always an array with items
+  const displayProducts = Array.isArray(apiProducts) && apiProducts.length > 0
     ? apiProducts
-    : Array.isArray(apiProducts?.products)
+    : Array.isArray(apiProducts?.products) && apiProducts.products.length > 0
       ? apiProducts.products
       : products;
 
