@@ -46,7 +46,7 @@ export default function HomePage() {
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={6}>
               <Chip label="Festival sale live" sx={{ bgcolor: 'rgba(255,255,255,.18)', color: 'white', fontWeight: 800 }} />
-              <Typography variant="h2" sx={{ mt: 2, maxWidth: 680 }}>Premium products, faster checkout, smarter deals.</Typography>
+              <Typography variant="h2" sx={{ mt: 2, maxWidth: 680, color: 'white' }}>Premium products, faster checkout, smarter deals.</Typography>
               <Typography sx={{ mt: 2, mb: 4, maxWidth: 560, color: 'rgba(255,255,255,.86)' }}>Shop curated tech, fashion, home and lifestyle essentials with flash discounts and personalized recommendations.</Typography>
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <Button component={RouterLink} to="/products" variant="contained" color="secondary" size="large" endIcon={<ArrowForwardIcon />}>Shop now</Button>
@@ -77,11 +77,16 @@ export default function HomePage() {
                         component="img"
                         src={getProductImages(product)?.[0] || ''}
                         alt={product?.name || 'Product'}
+                        onClick={() => {
+                          const productId = product?._id || product?.id;
+                          if (productId) window.location.href = `/product/${productId}`;
+                        }}
                         sx={{
                           width: '100%',
                           aspectRatio: '1',
                           objectFit: 'cover',
-                          borderRadius: 1
+                          borderRadius: 1,
+                          cursor: 'pointer'
                         }}
                       />
                     </Paper>
