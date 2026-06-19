@@ -1,14 +1,15 @@
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { Box, Button, CircularProgress, Container, FormControl, Grid, InputLabel, MenuItem, Pagination, Paper, Select, Slider, Stack, TextField, Typography } from '@mui/material';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
 import { useSearchParams } from 'react-router-dom';
 import EmptyState from '../components/EmptyState.jsx';
 import ProductCard from '../components/ProductCard.jsx';
 import SectionHeader from '../components/SectionHeader.jsx';
 import { categories, products as demoProducts } from '../data/demoData';
-import useFetch from '../hooks/useFetch.js';
-import api from '../services/api.js';
+
 import { getCategoryName, normalizeProducts } from '../utils/productUtils.js';
+
 
 const validCategoryName = (value) => (categories.some((item) => item.name === value) ? value : 'All');
 

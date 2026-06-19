@@ -3,14 +3,15 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import PercentIcon from '@mui/icons-material/Percent';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import { Box, Button, Card, CardContent, Chip, CircularProgress, Container, Grid, LinearProgress, Paper, Rating, Stack, Tab, Tabs, TextField, Typography } from '@mui/material';
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+
 import { Link as RouterLink } from 'react-router-dom';
 import ProductCard from '../components/ProductCard.jsx';
 import SectionHeader from '../components/SectionHeader.jsx';
 import { brands, categories, products, testimonials } from '../data/demoData';
-import useFetch from '../hooks/useFetch.js';
-import api from '../services/api.js';
+
 import { getProductImages } from '../utils/productUtils.js';
+
 
 export default function HomePage() {
   const [tab, setTab] = useState(0);
