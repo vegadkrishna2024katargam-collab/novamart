@@ -14,21 +14,10 @@ import { getProductImages } from '../utils/productUtils.js';
 
 export default function HomePage() {
   const [tab, setTab] = useState(0);
-  const fetchProducts = useCallback(async () => {
-    const { data } = await api.get('/products');
-    // normalizeProducts is not needed here because API products are handled defensively
-    // by the displayProducts fallback logic below.
-    return data;
-  }, []);
 
-  const { data: apiProducts = [], loading: productsLoading } = useFetch(fetchProducts, []);
-
-  // Defensive check: ensure displayProducts is always an array with items
-  const displayProducts = Array.isArray(apiProducts) && apiProducts.length > 0
-    ? apiProducts
-    : Array.isArray(apiProducts?.products) && apiProducts.products.length > 0
-      ? apiProducts.products
-      : products;
+  // Use demo products directly for consistent display. API call is optional.
+  const displayProducts = products;
+  const productsLoading = false;
 
   const tabProducts = useMemo(
     () => {

@@ -20,12 +20,9 @@ export default function ProductsPage() {
   const [price, setPrice] = useState([0, 1000]);
   const [page, setPage] = useState(1);
   const productsPerPage = 12;
-  const fetchProducts = useCallback(async () => {
-    const { data } = await api.get('/products');
-    return normalizeProducts(data);
-  }, []);
-  const { data: products = [], loading } = useFetch(fetchProducts, []);
-  const displayProducts = products && products.length > 0 ? products : normalizeProducts(demoProducts);
+  // Use demo products directly for consistent display
+  const displayProducts = normalizeProducts(demoProducts);
+  const loading = false;
 
   useEffect(() => {
     setQuery(searchParams.get('search') || '');
