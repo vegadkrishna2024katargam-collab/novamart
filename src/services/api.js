@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || '/api',
+  // If REACT_APP_API_URL is unset, fall back to the local backend.
+  // This avoids login failures when the frontend runs on a different port.
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
   timeout: 15000,
 });
 
