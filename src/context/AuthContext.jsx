@@ -3,37 +3,6 @@ import api from '../services/api';
 
 const AuthContext = createContext(null);
 
-// Demo users for offline/fallback authentication
-const DEMO_USERS = [
-  {
-    id: 'admin-1',
-    _id: 'admin-1',
-    name: 'Admin User',
-    email: 'admin@shopsphere.com',
-    password: 'admin123',
-    role: 'admin',
-    phone: '+1 234 567 890',
-    profileImage: '',
-  },
-  {
-    id: 'user-1',
-    _id: 'user-1',
-    name: 'John Doe',
-    email: 'user@shopsphere.com',
-    password: 'user123',
-    role: 'user',
-    phone: '+1 234 567 891',
-    profileImage: '',
-  },
-];
-
-function findDemoUser(email, password) {
-  const user = DEMO_USERS.find((u) => u.email === email);
-  if (!user || user.password !== password) return null;
-  const { password: _, ...safeUser } = user;
-  return safeUser;
-}
-
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('commerce_user');
@@ -55,15 +24,37 @@ export function AuthProvider({ children }) {
       persistSession(data);
       return data;
     } catch (apiError) {
-      // If API fails, use demo user fallback
-      const demoUser = findDemoUser(credentials.email, credentials.password);
-      if (demoUser) {
-        const fakeToken = 'demo_' + btoa(JSON.stringify({ id: demoUser.id, role: demoUser.role }));
-        const data = { user: demoUser, token: fakeToken };
-        persistSession(data);
-        return data;
+      // If API fails, create a local session based on email pattern
+      const email = credentials.email?.trim().toLowerCase() || '';
+      const password = credentials.password || '';
+
+      // Accept any @gmail.com email with a valid password
+      if (!email.endsWith('@gmail.com')) {
+        throw new Error('Please use a @gmail.com email address');
       }
-      throw new Error(apiError.response?.data?.message || 'Invalid email or password');
+
+      if (password.length < 3) {
+        throw new Error('Password must be at least 3 characters');
+      }
+
+      // Check if this is the admin account
+      const isAdmin = email.startsWith('admin');
+      const name = credentials.name || email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+      const newUser = {
+        id: isAdmin ? 'admin-1' : 'user-' + Date.now(),
+        _id: isAdmin ? 'admin-1' : 'user-' + Date.now(),
+        name: name,
+        email: email,
+        role: isAdmin ? 'admin' : 'user',
+        phone: '',
+        profileImage: '',
+      };
+
+      const fakeToken = 'demo_' + btoa(JSON.stringify({ id: newUser.id, role: newUser.role }));
+      const data = { user: newUser, token: fakeToken };
+      persistSession(data);
+      return data;
     }
   }, [persistSession]);
 
@@ -75,18 +66,21 @@ export function AuthProvider({ children }) {
       persistSession(data);
       return data;
     } catch (apiError) {
-      // Fallback: create a local demo user
-      const email = formData.get ? formData.get('email') : formData.email;
-      const name = formData.get ? formData.get('name') : formData.name;
+      // Fallback: create a local user
+      const email = (formData.get ? formData.get('email') : formData.email || '').trim().toLowerCase();
+      const name = formData.get ? formData.get('name') : formData.name || email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      const isAdmin = email.startsWith('admin');
+
       const newUser = {
-        id: 'user-' + Date.now(),
-        _id: 'user-' + Date.now(),
-        name: name || email?.split('@')[0] || 'User',
+        id: isAdmin ? 'admin-1' : 'user-' + Date.now(),
+        _id: isAdmin ? 'admin-1' : 'user-' + Date.now(),
+        name: name,
         email: email,
-        role: 'user',
+        role: isAdmin ? 'admin' : 'user',
         phone: formData.get ? formData.get('phone') : formData.phone || '',
-        profileImage: '',
+        profileImage: formData.get ? formData.get('profileImage') : formData.profileImage || '',
       };
+
       const fakeToken = 'demo_' + btoa(JSON.stringify({ id: newUser.id, role: newUser.role }));
       const data = { user: newUser, token: fakeToken };
       persistSession(data);
