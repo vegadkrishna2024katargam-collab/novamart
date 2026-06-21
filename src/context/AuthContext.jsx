@@ -33,12 +33,18 @@ export function AuthProvider({ children }) {
         throw new Error('Please use a @gmail.com email address');
       }
 
+      // If backend is unavailable, we still need to support role-based redirect.
+      // Treat admin emails as admin; everything else is a normal user.
+      const isAdmin = email.includes('admin') || email.startsWith('admin');
+
+
       if (password.length < 3) {
         throw new Error('Password must be at least 3 characters');
       }
 
       // Check if this is the admin account
-      const isAdmin = email.startsWith('admin');
+      // (isAdmin is derived above from email pattern)
+
       const name = credentials.name || email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
       const newUser = {
@@ -51,8 +57,15 @@ export function AuthProvider({ children }) {
         profileImage: '',
       };
 
-      const fakeToken = 'demo_' + btoa(JSON.stringify({ id: newUser.id, role: newUser.role }));
+      // Use a local demo token compatible with backend jwt decoding fallback.
+      // Backend uses jwt.verify(token, JWT_SECRET) in protect middleware.
+      // The fallback decoding in demo middleware expects token payload to include id/role.
+      const fakeTokenPayload = { id: newUser.id, role: newUser.role };
+      const fakeToken = 'local-' + btoa(JSON.stringify(fakeTokenPayload));
+
       const data = { user: newUser, token: fakeToken };
+
+
       persistSession(data);
       return data;
     }
@@ -81,8 +94,11 @@ export function AuthProvider({ children }) {
         profileImage: formData.get ? formData.get('profileImage') : formData.profileImage || '',
       };
 
-      const fakeToken = 'demo_' + btoa(JSON.stringify({ id: newUser.id, role: newUser.role }));
+      const fakeTokenPayload = { id: newUser.id, role: newUser.role };
+      const fakeToken = 'local-' + btoa(JSON.stringify(fakeTokenPayload));
+
       const data = { user: newUser, token: fakeToken };
+
       persistSession(data);
       return data;
     }
