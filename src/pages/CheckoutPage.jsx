@@ -105,12 +105,12 @@ export default function CheckoutPage() {
     setError('');
     if (!checkoutItems.length) return;
     if (!validate()) return;
-    if (!token || token.startsWith('local-')) {
-      if (token?.startsWith('local-')) logout();
-      setError('Please log in again before placing your order.');
+    if (!token) {
+      setError('Please log in before placing your order.');
       navigate('/login', { state: { from: '/checkout' } });
       return;
     }
+
     setPlacingOrder(true);
     try {
       const payload = {
