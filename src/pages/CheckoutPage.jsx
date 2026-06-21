@@ -114,6 +114,10 @@ export default function CheckoutPage() {
     setPlacingOrder(true);
     try {
       const payload = {
+        // Ensure stable keys for backend demoStore.
+        // - backend expects `paymentMethod` and `shippingAddress`
+        // - items must include `product` (id), `quantity`, and pricing
+        // - color/size are optional
         items: checkoutItems.map((item) => ({
           product: getProductId(item),
           name: item.name,
