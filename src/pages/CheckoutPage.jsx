@@ -50,7 +50,8 @@ export default function CheckoutPage() {
   const isBuyNow = searchParams.get('buyNow') === '1';
   const buyNowItem = isBuyNow ? getBuyNowItem() : null;
   const { items: cartItems, clearCart } = useCart();
-  const { token, logout, user } = useAuth();
+  const { token, user } = useAuth();
+
   const checkoutItems = useMemo(() => (buyNowItem ? [buyNowItem] : cartItems), [buyNowItem, cartItems]);
   const [address, setAddress] = useState(initialAddress);
   const [paymentMethod, setPaymentMethod] = useState('cod');
