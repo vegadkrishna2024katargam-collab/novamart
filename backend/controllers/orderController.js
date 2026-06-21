@@ -22,26 +22,44 @@ exports.createOrder = async (req, res, next) => {
     const paidMethods = ['upi', 'card', 'stripe', 'razorpay'];
     const paymentStatus = paidMethods.includes(req.body.paymentMethod) ? 'paid' : 'pending';
     const shippingAddress = buildAddress(req.body.shippingAddress || {});
+
+    // Log auth context for production debugging
+    if (!req.user) {
+      console.error('[createOrder] Missing req.user. authHeader=', req.headers.authorization);
+    } else {
+      console.error('[createOrder] req.user=', { id: req.user._id || req.user.id, role: req.user.role });
+    }
+
     if (!isMongoReady()) {
-      const user = demoStore.saveUserAddress(req.user._id, shippingAddress) || req.user;
-      const order = demoStore.createOrder({ ...req.body, shippingAddress, paymentStatus, user: req.user._id });
+      const user = (req.user && req.user._id) ? (demoStore.saveUserAddress(req.user._id, shippingAddress) || req.user) : req.user;
+      const order = demoStore.createOrder({ ...req.body, shippingAddress, paymentStatus, user: req.user?._id });
       sendOrderEmailSafely(user, order);
       return res.status(201).json(order);
     }
+
+    if (!req.user?._id) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
+
     if (hasAddress(shippingAddress)) {
       user.defaultAddress = shippingAddress;
       user.savedAddresses = mergeSavedAddresses(user.savedAddresses, shippingAddress);
       await user.save();
     }
+
     const order = await Order.create({ ...req.body, shippingAddress, paymentStatus, user: req.user._id });
     sendOrderEmailSafely(user, order);
-    res.status(201).json(order);
+    return res.status(201).json(order);
   } catch (error) {
-    next(error);
+    console.error('[createOrder] error=', error);
+    const status = error?.statusCode || error?.status || 400;
+    return res.status(status).json({ message: error?.message || 'Order could not be placed' });
   }
 };
+
 
 exports.getOrders = async (req, res, next) => {
   try {
