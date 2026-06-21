@@ -13,12 +13,13 @@ exports.protect = async (req, res, next) => {
     const token = header.startsWith('Bearer ') ? header.split(' ')[1] : null;
     if (!token) return res.status(401).json({ message: 'Not authorized' });
 
-    // Support frontend local demo tokens:
-    // frontend stores token like: local-<base64(JSON.stringify({id, role}))>
-    // This keeps order placement working even when JWT_SECRET verification isn't possible.
-    if (token.startsWith('local-')) {
+    // Support frontend local demo tokens (both demo_ and local- prefixes):
+    // frontend stores token like: demo_<base64(JSON.stringify({id, role}))>
+    const demoPrefixes = ['demo_', 'local-'];
+    const matchedPrefix = demoPrefixes.find((p) => token.startsWith(p));
+    if (matchedPrefix) {
       try {
-        const payloadBase64 = token.slice('local-'.length);
+        const payloadBase64 = token.slice(matchedPrefix.length);
         const payloadJson = Buffer.from(payloadBase64, 'base64').toString('utf8');
         const decoded = JSON.parse(payloadJson);
         const demoUser = demoStore.findUserById(decoded.id) || { _id: decoded.id, id: decoded.id, role: decoded.role || 'user' };
