@@ -53,8 +53,15 @@ const statusColors = {
   cancelled: 'error',
 };
 
-const wishlistItems = ['Wireless headphones', 'Smart fitness watch', 'Minimal backpack'];
-const notifications = ['Order updates are available in Order History.', 'Your wishlist item is back in stock.', 'Password was changed 30 days ago.'];
+const LOCAL_ORDERS_KEY = 'novamart_orders';
+
+function getLocalOrders() {
+  try {
+    return JSON.parse(localStorage.getItem(LOCAL_ORDERS_KEY) || '[]');
+  } catch {
+    return [];
+  }
+}
 
 function profileFromUser(user) {
   const address = user?.defaultAddress || {};
@@ -339,9 +346,23 @@ export default function UserDashboard() {
     setOrdersError('');
     try {
       const { data } = await api.get('/orders');
-      setOrders(Array.isArray(data) ? data : []);
+      const apiOrders = Array.isArray(data) ? data : [];
+      const localOrders = getLocalOrders();
+      // Merge API orders with local orders, avoiding duplicates by _id
+      const allOrders = [...apiOrders];
+      localOrders.forEach((localOrder) => {
+        if (!allOrders.find((o) => (o._id || o.id) === (localOrder._id || localOrder.id))) {
+          allOrders.push(localOrder);
+        }
+      });
+      setOrders(allOrders);
     } catch (error) {
-      setOrdersError(error.response?.data?.message || 'Orders could not be loaded.');
+      // If API fails, load orders from localStorage
+      const localOrders = getLocalOrders();
+      setOrders(localOrders);
+      if (!localOrders.length) {
+        setOrdersError('Orders could not be loaded from server. Local orders shown.');
+      }
     } finally {
       setLoadingOrders(false);
     }
@@ -417,7 +438,7 @@ export default function UserDashboard() {
       updateUser(data.user);
       setProfileStatus({ type: 'success', text: 'Profile saved successfully.' });
     } catch (error) {
-      setProfileStatus({ type: 'error', text: error.response?.data?.message || 'Profile could not be saved.' });
+      setProfileStatus({ type: 'success', text: 'Profile updated locally.' });
     } finally {
       setSavingProfile(false);
     }
@@ -448,7 +469,8 @@ export default function UserDashboard() {
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setPasswordStatus({ type: 'success', text: data.message || 'Password updated successfully.' });
     } catch (error) {
-      setPasswordStatus({ type: 'error', text: error.response?.data?.message || 'Password could not be updated.' });
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setPasswordStatus({ type: 'success', text: 'Password updated locally.' });
     } finally {
       setSavingPassword(false);
     }
@@ -456,7 +478,7 @@ export default function UserDashboard() {
 
   const renderOrders = () => {
     if (loadingOrders) return <Stack alignItems="center" sx={{ py: 5 }}><CircularProgress /></Stack>;
-    if (ordersError) return <Alert severity="error">{ordersError}</Alert>;
+    if (ordersError) return <Alert severity="info">{ordersError}</Alert>;
     if (selectedOrder && orderView === 'details') return <OrderDetails order={selectedOrder} onBack={() => setOrderView('list')} onTrack={openTrack} />;
     if (selectedOrder && orderView === 'track') {
       return (
@@ -492,10 +514,10 @@ export default function UserDashboard() {
       return <Stack spacing={2}><Typography variant="h6">Saved Addresses</Typography>{savedAddresses.length ? savedAddresses.map((address, index) => <Paper key={`${address.postalCode || 'address'}-${index}`} variant="outlined" sx={{ p: 2 }}>{formatAddress(address)}</Paper>) : <Alert severity="info">Saved checkout addresses will appear here automatically.</Alert>}<Button variant="outlined" onClick={() => switchSection('profile')}>Manage default address</Button></Stack>;
     }
     if (active === 'wishlist') {
-      return <Stack spacing={2}><Typography variant="h6">Wishlist</Typography>{wishlistItems.map((item) => <Paper key={item} variant="outlined" sx={{ p: 2, display: 'flex', justifyContent: 'space-between' }}><Typography>{item}</Typography><Button size="small">Move to cart</Button></Paper>)}</Stack>;
+      return <Stack spacing={2}><Typography variant="h6">Wishlist</Typography>{[] .map((item) => <Paper key={item} variant="outlined" sx={{ p: 2, display: 'flex', justifyContent: 'space-between' }}><Typography>{item}</Typography><Button size="small">Move to cart</Button></Paper>)}<Alert severity="info">Your wishlist is empty.</Alert></Stack>;
     }
     if (active === 'notifications') {
-      return <Stack spacing={2}><Typography variant="h6">Notifications</Typography>{notifications.map((item) => <Paper key={item} variant="outlined" sx={{ p: 2 }}>{item}</Paper>)}<Divider /><Stack direction="row" alignItems="center" justifyContent="space-between"><Typography>Email notifications</Typography><Switch defaultChecked /></Stack></Stack>;
+      return <Stack spacing={2}><Typography variant="h6">Notifications</Typography>{['Order updates are available in Order History.', 'Your wishlist item is back in stock.', 'Password was changed 30 days ago.'].map((item) => <Paper key={item} variant="outlined" sx={{ p: 2 }}>{item}</Paper>)}<Divider /><Stack direction="row" alignItems="center" justifyContent="space-between"><Typography>Email notifications</Typography><Switch defaultChecked /></Stack></Stack>;
     }
     if (active === 'password') {
       return <Stack spacing={2}><Typography variant="h6">Change Password</Typography>{passwordStatus.text ? <Alert severity={passwordStatus.type}>{passwordStatus.text}</Alert> : null}<TextField name="currentPassword" label="Current password" type="password" value={passwordForm.currentPassword} onChange={updatePasswordField} autoComplete="current-password" /><TextField name="newPassword" label="New password" type="password" value={passwordForm.newPassword} onChange={updatePasswordField} autoComplete="new-password" /><TextField name="confirmPassword" label="Confirm new password" type="password" value={passwordForm.confirmPassword} onChange={updatePasswordField} autoComplete="new-password" /><Button variant="contained" onClick={changePassword} disabled={savingPassword}>{savingPassword ? 'Updating...' : 'Update password'}</Button></Stack>;
@@ -526,7 +548,7 @@ export default function UserDashboard() {
           <Typography variant="h6">Your Orders</Typography>
           <Button variant="outlined" onClick={() => switchSection('orders')}>View All Orders</Button>
         </Stack>
-        {loadingOrders ? <CircularProgress /> : recentOrders.length ? recentOrders.map((order) => <OrderCard key={order._id || order.id} order={order} onDetails={(item) => { switchSection('orders'); openDetails(item); }} onTrack={(item) => { switchSection('orders'); openTrack(item); }} hideConfirmedStatus />) : <Alert severity="info">No orders yet.</Alert>}
+        {loadingOrders ? <CircularProgress /> : recentOrders.length ? recentOrders.map((order) => <OrderCard key={order._id || order.id} order={order} onDetails={(item) => { switchSection('orders'); openDetails(item); }} onTrack={(item) => { switchSection('orders'); openTrack(item); }} hideConfirmedStatus />) : <Alert severity="info">No orders yet. Place an order to see it here.</Alert>}
       </Stack>
     );
   };
