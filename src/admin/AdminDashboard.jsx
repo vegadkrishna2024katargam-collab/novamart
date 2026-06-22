@@ -119,7 +119,15 @@ export default function AdminDashboard() {
       if (active === 'reviews') setReviews(data);
       if (active === 'settings') setSettings(data);
     } catch (error) {
-      setNotice({ type: 'error', text: error.response?.data?.message || 'Admin data could not be loaded.' });
+      const status = error?.response?.status;
+      const message = error?.response?.data?.message || error?.message;
+      // Surface more details so admin loading issues can be diagnosed.
+      setNotice({
+        type: 'error',
+        text: `Admin data could not be loaded.${status ? ` (HTTP ${status})` : ''}${message ? `: ${message}` : ''}`,
+      });
+      // eslint-disable-next-line no-console
+      console.error('AdminDashboard load error:', error);
     } finally {
       if (!silent) setLoading(false);
     }
