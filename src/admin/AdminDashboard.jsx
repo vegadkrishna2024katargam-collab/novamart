@@ -18,10 +18,16 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import useAuth from '../hooks/useAuth';
 import api from '../services/api';
+
 import { colors } from '../styles/theme';
 import formatCurrency from '../utils/formatCurrency';
 
+function withAuthHeader(token) {
+  return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+}
+
 const menu = [
+
   ['dashboard', 'Dashboard', BarChartIcon],
   ['products', 'Products', Inventory2Icon],
   ['orders', 'Orders', ShoppingBagIcon],
@@ -75,7 +81,8 @@ function Field({ name, label, form, setForm, type = 'text', multiline = false })
 }
 
 export default function AdminDashboard() {
-  const { logout } = useAuth();
+  const { logout, token } = useAuth();
+
   const [active, setActive] = useState('dashboard');
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState({ type: '', text: '' });
@@ -102,15 +109,19 @@ export default function AdminDashboard() {
     }
     try {
       if (active === 'users') {
+        const authHeader = withAuthHeader(token);
         const [{ data: userData }, { data: statistics }] = await Promise.all([
-          api.get('/admin/users'),
-          api.get('/admin/users/statistics'),
+          api.get('/admin/users', authHeader),
+          api.get('/admin/users/statistics', authHeader),
         ]);
+
         setUsers(userData);
         setUserStats(statistics);
         return;
       }
-      const { data } = await api.get(`/admin/${active === 'dashboard' ? 'dashboard' : active}`);
+      const authHeader = withAuthHeader(token);
+      const { data } = await api.get(`/admin/${active === 'dashboard' ? 'dashboard' : active}`, authHeader);
+
       if (active === 'dashboard') setDashboard(data);
       if (active === 'products') setProducts(data);
       if (active === 'orders') setOrders(data);
@@ -343,7 +354,8 @@ export default function AdminDashboard() {
     );
   };
 
-  const content = { dashboard: renderDashboard, products: renderProducts, orders: renderOrders, users: renderUsers, categories: renderCategories, coupons: renderCoupons, reviews: renderReviews, settings: renderSettings }[active]?.();
+      const content = { dashboard: renderDashboard, products: renderProducts, orders: renderOrders, users: renderUsers, categories: renderCategories, coupons: renderCoupons, reviews: renderReviews, settings: renderSettings }[active]?.();
+
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>

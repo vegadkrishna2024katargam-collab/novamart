@@ -8,9 +8,12 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
+  // Attach token only if it exists. Never throw inside interceptors.
   const token = localStorage.getItem('commerce_token');
+  if (!config.headers) config.headers = {};
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
 export default api;
+
