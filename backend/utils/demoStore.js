@@ -31,52 +31,108 @@ function loadDemoProducts() {
     const source = fs.readFileSync(demoDataPath, 'utf8');
 
     // Extract the exported products array from the ESM file without importing it.
+    // We locate the `export const products = [` marker and then find the *matching* `];` by bracket depth.
     const marker = 'export const products = [';
     const start = source.indexOf(marker);
-    if (start === -1) return fallback;
+    if (start === -1) throw new Error('products marker not found');
 
     const arrayStart = source.indexOf('[', start);
+    if (arrayStart === -1) throw new Error('products array start not found');
+
     let depth = 0;
     let end = arrayStart;
+    let lastChar = '';
     for (; end < source.length; end += 1) {
       const char = source[end];
+      lastChar = char;
       if (char === '[') depth += 1;
       if (char === ']') {
         depth -= 1;
         if (depth === 0) {
+          // include the closing bracket `]`
           end += 1;
           break;
         }
       }
     }
 
+    if (depth !== 0) throw new Error('products array parse failed (unbalanced brackets)');
+
     const arrayText = source.slice(arrayStart, end);
 
-    // demoData.js is a JS module with object literals, so Function() works here.
-    const parsed = Function(`"use strict"; return (${arrayText});`)();
+    // We only need the `mkImages` helper and the `products` export.
+    // demoData.js also contains React/MUI icon imports, which we must not evaluate.
+    const mkImagesStart = source.indexOf('const mkImages');
+    if (mkImagesStart === -1) throw new Error('mkImages helper not found');
 
-    // Ensure all products have images[] (frontend expects images array via productUtils)
+    // Slice from mkImages start to the end of products array.
+    const snippet = source.slice(mkImagesStart, end);
+
+    const module = { exports: {} };
+    const exportsObj = module.exports;
+
+    // Convert `export const products =` to `exportsObj.products =`.
+    const snippetCjs = snippet.replace(/export const products\s*=\s*/g, 'exportsObj.products = ');
+
+    const fn = new Function('exportsObj', 'module', 'require', 'process', snippetCjs);
+    fn(exportsObj, module, require, process);
+
+    const parsed = exportsObj.products;
+
+    if (!Array.isArray(parsed)) throw new Error('products export did not evaluate to an array');
+    if (parsed.length < 10) {
+      // If parsing unexpectedly produced a partial set, treat it as a failure.
+      // (Your real catalog has 36 products.)
+      throw new Error(`parsed products too small: ${parsed.length}`);
+    }
+
+    // IMPORTANT: Admin UI expects a stable backend shape.
+    // Ensure every frontend product (id/name/images/category/price/stock/status) is present.
     return parsed.map((product, idx) => {
+      const id = product.id || product._id || `prod-${idx + 1}`;
+
       const images = Array.isArray(product.images)
         ? product.images
         : typeof product.image === 'string' && product.image
           ? [product.image]
           : [];
 
-      const id = product.id || product._id || `prod-${idx + 1}`;
+      // Frontend demo data uses `numReviews`; admin may also accept `reviewCount`.
+      const numReviews = Number(product.numReviews ?? product.reviewCount ?? product.reviews ?? 120);
+
+      // Frontend uses `countInStock`; admin UI expects `countInStock` (with fallback).
+      const countInStock = Number(product.countInStock ?? product.stock ?? product.stockQuantity ?? 0);
 
       return {
         ...product,
         _id: product._id || id,
         id,
+
+        // Admin table uses: product.images?.[0] || product.image
         images: images.length ? images : [fallback[0].images[0]],
-        countInStock: Number(product.countInStock ?? product.stock ?? 25),
-        // backend supports both brand and category
-        brand: product.brand || product.brandName || product.seller || product.name.split(' ')[0] || '',
-        numReviews: Number(product.numReviews ?? product.reviewCount ?? product.reviews ?? 120),
+        image: images.length ? images[0] : (fallback[0].images?.[0] || ''),
+
+        name: product.name || product.title || `Product ${idx + 1}`,
+        description: product.description || product.shortDescription || '',
+        category: product.category || product.categoryName || 'General',
+
+        brand: product.brand || product.brandName || product.seller || '',
+
+        price: Number(product.price ?? product.discountPrice ?? 0),
+        oldPrice: Number(product.oldPrice ?? product.mrp ?? product.compareAtPrice ?? product.discountPrice ?? 0),
+
+        countInStock,
         status: product.status || 'active',
+
+        // Admin table shows status chip.
+        rating: Number(product.rating ?? 0),
+        numReviews,
+
+        // Admin edit dialog expects strings for these fields.
         colors: Array.isArray(product.colors) ? product.colors : [],
         sizes: Array.isArray(product.sizes) ? product.sizes : [],
+
+        // Ensure timestamps exist.
         createdAt: product.createdAt || new Date().toISOString(),
         updatedAt: product.updatedAt || new Date().toISOString(),
       };

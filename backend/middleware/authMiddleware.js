@@ -46,6 +46,14 @@ exports.protect = async (req, res, next) => {
 };
 
 exports.admin = (req, res, next) => {
+  // When running without MongoDB, demo/admin pages should still be accessible
+  // if the demo payload marks the user as admin.
   if (req.user?.role === 'admin') return next();
+
+  // Support tokens coming in with a role claim under different keys (defensive).
+  const role = req.user?.role || req.user?.userRole || req.user?.authorizationRole;
+  if (role === 'admin') return next();
+
   return res.status(403).json({ message: 'Admin access required' });
 };
+
