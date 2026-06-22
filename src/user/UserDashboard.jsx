@@ -514,7 +514,7 @@ export default function UserDashboard() {
       return <Stack spacing={2}><Typography variant="h6">Saved Addresses</Typography>{savedAddresses.length ? savedAddresses.map((address, index) => <Paper key={`${address.postalCode || 'address'}-${index}`} variant="outlined" sx={{ p: 2 }}>{formatAddress(address)}</Paper>) : <Alert severity="info">Saved checkout addresses will appear here automatically.</Alert>}<Button variant="outlined" onClick={() => switchSection('profile')}>Manage default address</Button></Stack>;
     }
     if (active === 'wishlist') {
-      return <Stack spacing={2}><Typography variant="h6">Wishlist</Typography>{[] .map((item) => <Paper key={item} variant="outlined" sx={{ p: 2, display: 'flex', justifyContent: 'space-between' }}><Typography>{item}</Typography><Button size="small">Move to cart</Button></Paper>)}<Alert severity="info">Your wishlist is empty.</Alert></Stack>;
+      return <Stack spacing={2}><Typography variant="h6">Wishlist</Typography><Alert severity="info">Your wishlist is empty.</Alert></Stack>;
     }
     if (active === 'notifications') {
       return <Stack spacing={2}><Typography variant="h6">Notifications</Typography>{['Order updates are available in Order History.', 'Your wishlist item is back in stock.', 'Password was changed 30 days ago.'].map((item) => <Paper key={item} variant="outlined" sx={{ p: 2 }}>{item}</Paper>)}<Divider /><Stack direction="row" alignItems="center" justifyContent="space-between"><Typography>Email notifications</Typography><Switch defaultChecked /></Stack></Stack>;
@@ -548,7 +548,7 @@ export default function UserDashboard() {
           <Typography variant="h6">Your Orders</Typography>
           <Button variant="outlined" onClick={() => switchSection('orders')}>View All Orders</Button>
         </Stack>
-        {loadingOrders ? <CircularProgress /> : recentOrders.length ? recentOrders.map((order) => <OrderCard key={order._id || order.id} order={order} onDetails={(item) => { switchSection('orders'); openDetails(item); }} onTrack={(item) => { switchSection('orders'); openTrack(item); }} hideConfirmedStatus />) : <Alert severity="info">No orders yet. Place an order to see it here.</Alert>}
+{loadingOrders ? <CircularProgress /> : recentOrders.length ? recentOrders.map((order) => <OrderCard key={order._id || order.id} order={order} onDetails={(item) => {switchSection('orders'); openDetails(item);}} onTrack={(item) => {switchSection('orders'); openTrack(item);}} hideConfirmedStatus />) : <Alert severity="info">No orders yet. Place an order to see it here.</Alert>}
       </Stack>
     );
   };
