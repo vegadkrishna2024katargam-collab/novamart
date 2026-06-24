@@ -406,11 +406,40 @@ export default function AdminDashboard() {
   const renderOrders = () => (
     <Stack spacing={2}>
       <Typography variant="h6">Orders Management</Typography>
-      <TableWrap heads={['Order ID', 'Customer Name', 'Product Count', 'Amount', 'Payment Method', 'Status', 'Date', 'Actions']}>
-        {orders.map((order) => <TableRow key={idOf(order)}><TableCell>{String(idOf(order)).slice(0, 8)}</TableCell><TableCell>{order.user?.name || order.shippingAddress?.name || order.userName || 'Customer'}</TableCell><TableCell>{order.items?.length || 0}</TableCell><TableCell>{formatCurrency(order.total || 0)}</TableCell><TableCell>{String(order.paymentMethod || 'cod').toUpperCase()}</TableCell><TableCell><StatusSelect value={order.orderStatus || 'pending'} options={orderStatuses} onChange={(value) => updateOrderStatus(order, value)} /></TableCell><TableCell>{dateText(order.createdAt)}</TableCell><TableCell><IconButton onClick={() => setDialog({ type: 'order', item: order })}><VisibilityIcon /></IconButton></TableCell></TableRow>)}
+      <TableWrap heads={['Order ID', 'Customer', 'Products', 'Subtotal', 'Shipping', 'Discount', 'Tax', 'Total', 'Payment', 'Status', 'Date', 'Actions']}>
+        {orders.map((order) => (
+          <TableRow key={idOf(order)}>
+            <TableCell>{String(idOf(order)).slice(0, 8)}</TableCell>
+            <TableCell>
+              {order.user?.name || order.shippingAddress?.name || order.userName || 'Customer'}
+              {order.user?.email ? <Typography variant="caption" color="text.secondary" display="block">{order.user.email}</Typography> : null}
+            </TableCell>
+            <TableCell>{order.items?.length || 0}</TableCell>
+            <TableCell>{formatCurrency(order.subtotal || 0)}</TableCell>
+            <TableCell>{formatCurrency(order.shipping || 0)}</TableCell>
+            <TableCell>-{formatCurrency(order.couponDiscount || order.discount || 0)}</TableCell>
+            <TableCell>{formatCurrency(order.tax || 0)}</TableCell>
+            <TableCell>{formatCurrency(order.total || 0)}</TableCell>
+            <TableCell>{String(order.paymentMethod || 'cod').toUpperCase()}</TableCell>
+            <TableCell>
+              <StatusSelect
+                value={order.orderStatus || 'pending'}
+                options={orderStatuses}
+                onChange={(value) => updateOrderStatus(order, value)}
+              />
+            </TableCell>
+            <TableCell>{dateText(order.createdAt)}</TableCell>
+            <TableCell>
+              <IconButton onClick={() => setDialog({ type: 'order', item: order })}>
+                <VisibilityIcon />
+              </IconButton>
+            </TableCell>
+          </TableRow>
+        ))}
       </TableWrap>
     </Stack>
   );
+
 
   const renderUsers = () => (
     <Stack spacing={2}>
@@ -430,10 +459,31 @@ export default function AdminDashboard() {
         ].map(([label, value]) => <Grid item xs={12} sm={6} lg={3} key={label}><Paper variant="outlined" sx={{ p: 2 }}><Typography color="text.secondary">{label}</Typography><Typography variant="h4" fontWeight={900}>{value}</Typography></Paper></Grid>)}
       </Grid>
       <TableWrap heads={['User Name', 'Email', 'Phone', 'Orders Count', 'Join Date', 'Last Login', 'Status', 'Actions']}>
-        {users.map((user) => <TableRow key={idOf(user)}><TableCell>{user.name}</TableCell><TableCell>{user.email}</TableCell><TableCell>{user.phone}</TableCell><TableCell>{user.ordersCount || 0}</TableCell><TableCell>{dateText(user.createdAt)}</TableCell><TableCell>{user.lastLoginAt ? dateText(user.lastLoginAt) : 'Never'}</TableCell><TableCell><Chip label={user.status || 'active'} color={statusColor(user.status || 'active')} /></TableCell><TableCell><IconButton onClick={() => openUser(user)}><EditIcon /></IconButton><IconButton color="error" onClick={() => remove('users', user)}><DeleteIcon /></IconButton></TableCell></TableRow>)}
+        {users.map((user) => (
+          <TableRow key={idOf(user)}>
+            <TableCell>{user.name}</TableCell>
+            <TableCell>{user.email}</TableCell>
+            <TableCell>{user.phone}</TableCell>
+            <TableCell>{user.ordersCount || 0}</TableCell>
+            <TableCell>{dateText(user.createdAt)}</TableCell>
+            <TableCell>{user.lastLoginAt ? dateText(user.lastLoginAt) : 'Never'}</TableCell>
+            <TableCell>
+              <Chip label={user.status || 'active'} color={statusColor(user.status || 'active')} />
+            </TableCell>
+            <TableCell>
+              <IconButton onClick={() => openUser(user)}>
+                <EditIcon />
+              </IconButton>
+              <IconButton color="error" onClick={() => remove('users', user)}>
+                <DeleteIcon />
+              </IconButton>
+            </TableCell>
+          </TableRow>
+        ))}
       </TableWrap>
     </Stack>
   );
+
 
   const renderCategories = () => (
     <Stack spacing={2}>
@@ -534,7 +584,52 @@ function AdminDialog({ dialog, closeDialog, productForm, setProductForm, savePro
         {dialog.type === 'category' ? <Box sx={{ display: 'grid', gap: 2, mt: 1 }}><Field name="name" label="Category Name" form={categoryForm} setForm={setCategoryForm} /><Field name="description" label="Description" form={categoryForm} setForm={setCategoryForm} multiline /><Field name="image" label="Category Image" form={categoryForm} setForm={setCategoryForm} /><Field name="banner" label="Category Banner" form={categoryForm} setForm={setCategoryForm} /><Field name="status" label="Status" form={categoryForm} setForm={setCategoryForm} /></Box> : null}
         {dialog.type === 'coupon' ? <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { md: '1fr 1fr' }, mt: 1 }}><Field name="code" label="Coupon Code" form={couponForm} setForm={setCouponForm} /><Field name="discountType" label="Discount Type" form={couponForm} setForm={setCouponForm} /><Field name="discountValue" label="Discount Value" form={couponForm} setForm={setCouponForm} type="number" /><Field name="minimumPurchase" label="Minimum Purchase" form={couponForm} setForm={setCouponForm} type="number" /><Field name="maximumDiscount" label="Maximum Discount" form={couponForm} setForm={setCouponForm} type="number" /><Field name="expiryDate" label="Expiry Date" form={couponForm} setForm={setCouponForm} type="date" /><Field name="usageLimit" label="Usage Limit" form={couponForm} setForm={setCouponForm} type="number" /><Stack direction="row" alignItems="center" justifyContent="space-between"><Typography>Status</Typography><Switch checked={couponForm.isActive} onChange={(event) => setCouponForm((current) => ({ ...current, isActive: event.target.checked }))} /></Stack></Box> : null}
         {dialog.type === 'user' ? <Box sx={{ display: 'grid', gap: 2, mt: 1 }}><Field name="name" label="User Name" form={userForm} setForm={setUserForm} /><Field name="email" label="Email" form={userForm} setForm={setUserForm} /><Field name="phone" label="Phone" form={userForm} setForm={setUserForm} /><Field name="status" label="Status" form={userForm} setForm={setUserForm} /></Box> : null}
-        {dialog.type === 'order' ? <Stack spacing={2} sx={{ mt: 1 }}><DetailBlock title="Customer Details" lines={[item.user?.name || item.shippingAddress?.name || item.userName, item.user?.email || item.userEmail, item.shippingAddress?.phone]} /><DetailBlock title="Shipping Address" lines={[item.shippingAddress?.address, `${item.shippingAddress?.city || ''}, ${item.shippingAddress?.state || ''}`, item.shippingAddress?.postalCode]} /><DetailBlock title="Products List" lines={(item.items || []).map((product) => `${product.name} x ${product.quantity || 1}`)} /><DetailBlock title="Payment Information" lines={[String(item.paymentMethod || '').toUpperCase(), item.paymentStatus, formatCurrency(item.total || 0)]} /><DetailBlock title="Invoice" lines={[`Invoice ${String(idOf(item)).slice(0, 8)}`, `Date ${dateText(item.createdAt)}`]} /><DetailBlock title="Tracking Details" lines={[item.orderStatus || 'pending']} /></Stack> : null}
+        {dialog.type === 'order' ? (
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <DetailBlock
+              title="Customer Details"
+              lines={[
+                item.user?.name || item.shippingAddress?.name || item.userName || '-',
+                item.user?.email || item.userEmail || '-',
+                item.shippingAddress?.phone || '-',
+              ]}
+            />
+            <DetailBlock
+              title="Shipping Address"
+              lines={[
+                item.shippingAddress?.address || '-',
+                `${item.shippingAddress?.city || ''}, ${item.shippingAddress?.state || ''}`.trim() || '-',
+                item.shippingAddress?.postalCode || '-',
+              ]}
+            />
+            <DetailBlock
+              title="Products List"
+              lines={(item.items || []).map((p) => {
+                const qty = p.quantity || 1;
+                const lineTotal = p.total != null ? formatCurrency(p.total) : '';
+                return `${p.name} x ${qty}${lineTotal ? ` (${lineTotal})` : ''}`;
+              })}
+            />
+            <DetailBlock
+              title="Payment Information"
+              lines={[
+                String(item.paymentMethod || '').toUpperCase() || '-',
+                item.paymentStatus || '-',
+                formatCurrency(item.subtotal || 0),
+                formatCurrency(item.shipping || 0),
+                formatCurrency(item.couponDiscount || item.discount || 0),
+                formatCurrency(item.tax || 0),
+                formatCurrency(item.total || 0),
+              ]}
+            />
+            <DetailBlock
+              title="Invoice"
+              lines={[`Invoice ${String(idOf(item)).slice(0, 8)}`, `Date ${dateText(item.createdAt)}`]}
+            />
+            <DetailBlock title="Order Status" lines={[item.orderStatus || 'pending']} />
+          </Stack>
+        ) : null}
+
         {dialog.type === 'user-details' ? <Stack spacing={2} sx={{ mt: 1 }}><DetailBlock title="Personal Information" lines={[item.name, item.email, item.phone]} /><DetailBlock title="Address List" lines={(item.savedAddresses || []).map((address) => `${address.address}, ${address.city}`)} /><DetailBlock title="Order History" lines={[`${item.ordersCount || 0} orders`]} /><DetailBlock title="Wishlist" lines={['Available from customer wishlist section']} /><DetailBlock title="Reviews" lines={['Available from reviews section']} /></Stack> : null}
         {dialog.type === 'review' ? <Stack spacing={2} sx={{ mt: 1 }}><DetailBlock title="Review Details" lines={[item.customerName || item.user?.name, item.productName || item.product?.name, `Rating: ${item.rating}`, item.comment]} /><DetailBlock title="Review Images" lines={(item.images || []).length ? item.images : ['No images']} /></Stack> : null}
         {dialog.type === 'view-product' ? <Stack spacing={2} sx={{ mt: 1 }}><DetailBlock title="Product Details" lines={[item.name, categoryName(item.category), item.brand, formatCurrency(item.price || 0), item.description]} /></Stack> : null}
