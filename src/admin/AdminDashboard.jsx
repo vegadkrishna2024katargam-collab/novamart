@@ -234,14 +234,21 @@ export default function AdminDashboard() {
             api.get('/admin/users', authHeader),
             api.get('/admin/users/statistics', authHeader),
           ]);
-          setUsers(userData);
-          setUserStats(statistics);
+
+          // Prefer real DB results; fall back only when the API returns nothing/invalid.
+          if (Array.isArray(userData) && userData.length) {
+            setUsers(userData);
+          } else {
+            setUsers(getLocalUsers());
+          }
+          setUserStats(statistics || getLocalUserStats());
         } catch {
           setUsers(getLocalUsers());
           setUserStats(getLocalUserStats());
         }
         return;
       }
+
 
       try {
         const { data } = await api.get(`/admin/${active === 'dashboard' ? 'dashboard' : active}`, authHeader);
