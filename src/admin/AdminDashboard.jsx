@@ -89,31 +89,70 @@ function Field({ name, label, form, setForm, type = 'text', multiline = false })
   );
 }
 
-// Local fallback data
+const LOCAL_USERS_KEY = 'novamart_users';
+
+function getLocalUsers() {
+  const localOrders = getLocalOrders();
+  // Collect unique user emails from orders
+  const orderUserEmails = [...new Set(localOrders.map((o) => o.userEmail || '').filter(Boolean))];
+  
+  // Build users from orders
+  const orderUsers = orderUserEmails.map((email) => {
+    const userOrders = localOrders.filter((o) => o.userEmail === email);
+    return {
+      _id: email.replace(/[@.]/g, '-'),
+      name: userOrders[0]?.userName || email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+      email: email,
+      role: email.startsWith('admin') ? 'admin' : 'user',
+      phone: userOrders[0]?.shippingAddress?.phone || '',
+      ordersCount: userOrders.length,
+      status: 'active',
+      createdAt: userOrders[0]?.createdAt || new Date().toISOString(),
+      lastLoginAt: new Date().toISOString(),
+    };
+  });
+
+  // Always include default users
+  const defaultUsers = [
+    { _id: 'admin-1', name: 'Admin User', email: 'admin@shopsphere.com', role: 'admin', phone: '+1 234 567 890', ordersCount: 0, status: 'active', createdAt: new Date().toISOString(), lastLoginAt: new Date().toISOString() },
+    { _id: 'user-1', name: 'John Doe', email: 'user@shopsphere.com', role: 'user', phone: '+1 234 567 891', ordersCount: localOrders.length, status: 'active', createdAt: new Date().toISOString(), lastLoginAt: new Date().toISOString() },
+  ];
+
+  // Merge and deduplicate
+  const allUsers = [...defaultUsers];
+  orderUsers.forEach((ou) => {
+    if (!allUsers.find((u) => u.email === ou.email)) {
+      allUsers.push(ou);
+    }
+  });
+
+  return allUsers;
+}
+
+function getLocalUserStats() {
+  const users = getLocalUsers();
+  return {
+    registeredUsers: users.length,
+    loggedInUsers: users.length,
+    activeUsers: users.filter((u) => u.status === 'active').length,
+    blockedUsers: users.filter((u) => u.status === 'blocked').length,
+    generatedAt: new Date().toISOString(),
+  };
+}
+
 function getLocalDashboardData() {
   const localOrders = getLocalOrders();
   const totalRevenue = localOrders.reduce((sum, o) => sum + Number(o.total || 0), 0);
   return {
     totalProducts: demoProducts.length,
     totalOrders: localOrders.length,
-    totalUsers: 2,
+    totalUsers: getLocalUsers().length,
     totalCategories: demoCategories.length,
     totalRevenue,
     pendingOrders: localOrders.filter((o) => !['delivered', 'cancelled'].includes(o.orderStatus)).length,
     salesOverview: demoAnalytics || [],
     generatedAt: new Date().toISOString(),
   };
-}
-
-function getLocalUsers() {
-  return [
-    { _id: 'admin-1', name: 'Admin User', email: 'admin@shopsphere.com', role: 'admin', phone: '+1 234 567 890', ordersCount: 0, status: 'active', createdAt: new Date().toISOString(), lastLoginAt: new Date().toISOString() },
-    { _id: 'user-1', name: 'John Doe', email: 'user@shopsphere.com', role: 'user', phone: '+1 234 567 891', ordersCount: getLocalOrders().length, status: 'active', createdAt: new Date().toISOString(), lastLoginAt: new Date().toISOString() },
-  ];
-}
-
-function getLocalUserStats() {
-  return { registeredUsers: 2, loggedInUsers: 2, activeUsers: 2, blockedUsers: 0, generatedAt: new Date().toISOString() };
 }
 
 function getLocalCategories() {
