@@ -89,10 +89,17 @@ function Field({ name, label, form, setForm, type = 'text', multiline = false })
   );
 }
 
-const LOCAL_USERS_KEY = 'novamart_users';
+
+// NOTE: kept for compatibility with earlier local-key patterns.
+// It is intentionally unused here (derived data comes from getLocalOrders()).
+
+
+
 
 function getLocalUsers() {
+  // LOCAL_USERS_KEY is used by getLocalOrders(); kept for parity with other local keys.
   const localOrders = getLocalOrders();
+
   // Collect unique user emails from orders
   const orderUserEmails = [...new Set(localOrders.map((o) => o.userEmail || '').filter(Boolean))];
   

@@ -10,6 +10,7 @@ import useWishlist from '../hooks/useWishlist';
 import {
   getCategoryName,
   getProductId,
+  getProductImages,
   normalizeProduct,
   toCartProduct,
 } from '../utils/productUtils.js';
@@ -31,8 +32,11 @@ export default function ProductCard({ product }) {
   const wished = isWishlisted(productId);
   const badge = displayProduct.badge || (displayProduct.discount ? `${displayProduct.discount}% off` : 'Featured');
 
+  const images = getProductImages(displayProduct);
+  
   const stockCount = displayProduct?.countInStock ?? displayProduct?.stock ?? 0;
   const inStock = stockCount > 0;
+
 
   const stopCardNavigation = (event) => {
     event.stopPropagation();
@@ -142,12 +146,28 @@ export default function ProductCard({ product }) {
           ) : null}
         </Stack>
 
+        {Array.isArray(images) && images.length > 1 ? (
+          <Stack direction="row" spacing={1} sx={{ mt: 0.5, mb: 0.75, overflow: 'hidden' }}>
+            {images.slice(0, 3).map((img) => (
+              <Box
+                key={img}
+                component="img"
+                src={img}
+                alt={displayProduct.name}
+                sx={{
+                  width: 46,
+                  height: 46,
+                  objectFit: 'cover',
+                  borderRadius: 1,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                }}
+              />
+            ))}
+          </Stack>
+        ) : null}
+
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-          {displayProduct.brand ? (
-            <Typography variant="caption" color="text.secondary">
-              Sold by <b>{displayProduct.brand}</b>
-            </Typography>
-          ) : null}
           <Chip
             label={inStock ? (stockCount ? `In stock (${stockCount})` : 'In stock') : 'Out of stock'}
             color={inStock ? 'success' : 'error'}
@@ -155,6 +175,8 @@ export default function ProductCard({ product }) {
             sx={{ ml: 'auto' }}
           />
         </Stack>
+
+
 
 
 
