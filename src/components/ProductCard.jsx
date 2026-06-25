@@ -10,7 +10,6 @@ import useWishlist from '../hooks/useWishlist';
 import {
   getCategoryName,
   getProductId,
-  getProductImages,
   normalizeProduct,
   toCartProduct,
 } from '../utils/productUtils.js';
@@ -25,15 +24,10 @@ export default function ProductCard({ product }) {
   const productId = getProductId(displayProduct);
   const detailPath = productId ? `/product/${productId}` : '/products';
 
-
-
-
   const category = getCategoryName(displayProduct.category);
   const wished = isWishlisted(productId);
   const badge = displayProduct.badge || (displayProduct.discount ? `${displayProduct.discount}% off` : 'Featured');
 
-  const images = getProductImages(displayProduct);
-  
   const stockCount = displayProduct?.countInStock ?? displayProduct?.stock ?? 0;
   const inStock = stockCount > 0;
 
@@ -146,33 +140,6 @@ export default function ProductCard({ product }) {
           ) : null}
         </Stack>
 
-        {Array.isArray(images) && images.length > 1 ? (
-          <Stack direction="row" spacing={1} sx={{ mt: 0.5, mb: 0.75, overflow: 'hidden' }}>
-            {images.slice(0, 3).map((img, idx) => (
-              <Box
-                key={`${img}-${idx}`}
-                component="img"
-                src={img}
-                alt={displayProduct.name}
-                loading="lazy"
-                onError={(event) => {
-                  // If any thumbnail fails to load, avoid showing the entire thumbnail row.
-                  // This is done by removing the thumbnail from the DOM via parent re-render signal.
-                  // We keep it simple: hide this single thumbnail.
-                  event.currentTarget.style.display = 'none';
-                }}
-                sx={{
-                  width: 46,
-                  height: 46,
-                  objectFit: 'cover',
-                  borderRadius: 1,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                }}
-              />
-            ))}
-          </Stack>
-        ) : null}
 
 
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
