@@ -60,9 +60,9 @@ export const products = [
     badge: '18% off',
     countInStock: 33,
     images: mkImages(
-      'https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQuuozpth_wJ80CkKNEaZFphm9rnPlRGXqhPPhIB670SQhwb8FTUzSV2Bo312ZYlgjDu5Hm6bu6mdCrqRaNPOspNkwdSgf0CE5QcTmmpFoNYAPiasqLreES3w&usqp=CAc',
+      'adidas-images-for-desktop-background-wallpaper-preview.jpg',
       [
-        'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=1200&q=80'
+        'adidas-images-for-desktop-background-wallpaper-preview.jpg'
       ]
     ),
     description: 'Lightweight training shoe built for all-day comfort and a stable, springy ride on pavement or track.',
