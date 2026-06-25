@@ -90,14 +90,7 @@ function Field({ name, label, form, setForm, type = 'text', multiline = false })
 }
 
 
-// NOTE: kept for compatibility with earlier local-key patterns.
-// It is intentionally unused here (derived data comes from getLocalOrders()).
-
-
-
-
-function getLocalUsers() {
-  // LOCAL_USERS_KEY is used by getLocalOrders(); kept for parity with other local keys.
+function getLocalUsers(currentUser) {
   const localOrders = getLocalOrders();
 
   // Collect unique user emails from orders
@@ -119,32 +112,22 @@ function getLocalUsers() {
     };
   });
 
-  // Always include default users
-  const defaultUsers = [
-    { _id: 'admin-1', name: 'Admin User', email: 'admin@shopsphere.com', role: 'admin', phone: '+1 234 567 890', ordersCount: 0, status: 'active', createdAt: new Date().toISOString(), lastLoginAt: new Date().toISOString() },
-    { _id: 'user-1', name: 'John Doe', email: 'user@shopsphere.com', role: 'user', phone: '+1 234 567 891', ordersCount: localOrders.length, status: 'active', createdAt: new Date().toISOString(), lastLoginAt: new Date().toISOString() },
-  ];
+  // Also include the currently logged-in user if provided and not already in order users
+  if (currentUser && !orderUsers.find((u) => u.email === currentUser.email)) {
+    orderUsers.unshift({
+      _id: currentUser._id || currentUser.id || currentUser.email.replace(/[@.]/g, '-'),
+      name: currentUser.name || 'User',
+      email: currentUser.email || '',
+      role: currentUser.role || 'user',
+      phone: currentUser.phone || '',
+      ordersCount: localOrders.filter((o) => o.userEmail === currentUser.email).length,
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      lastLoginAt: new Date().toISOString(),
+    });
+  }
 
-  // Merge and deduplicate
-  const allUsers = [...defaultUsers];
-  orderUsers.forEach((ou) => {
-    if (!allUsers.find((u) => u.email === ou.email)) {
-      allUsers.push(ou);
-    }
-  });
-
-  return allUsers;
-}
-
-function getLocalUserStats() {
-  const users = getLocalUsers();
-  return {
-    registeredUsers: users.length,
-    loggedInUsers: users.length,
-    activeUsers: users.filter((u) => u.status === 'active').length,
-    blockedUsers: users.filter((u) => u.status === 'blocked').length,
-    generatedAt: new Date().toISOString(),
-  };
+  return orderUsers;
 }
 
 function getLocalDashboardData() {
@@ -241,10 +224,13 @@ export default function AdminDashboard() {
           } else {
             setUsers(getLocalUsers());
           }
-          setUserStats(statistics || getLocalUserStats());
+          setUserStats(statistics || getLocalDashboardData().generatedAt ? {} : {});
+          // Use local fallback stats when backend stats are unavailable
+          // (keeps app functional without crashing)
+          if (!statistics) setUserStats(getLocalDashboardData());
         } catch {
           setUsers(getLocalUsers());
-          setUserStats(getLocalUserStats());
+          setUserStats(getLocalDashboardData());
         }
         return;
       }

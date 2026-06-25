@@ -60,7 +60,7 @@ export const products = [
     badge: '18% off',
     countInStock: 33,
     images: mkImages(
-      'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=1200&q=80',
+      'https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQuuozpth_wJ80CkKNEaZFphm9rnPlRGXqhPPhIB670SQhwb8FTUzSV2Bo312ZYlgjDu5Hm6bu6mdCrqRaNPOspNkwdSgf0CE5QcTmmpFoNYAPiasqLreES3w&usqp=CAc',
       [
         'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=1200&q=80'
       ]
@@ -80,7 +80,7 @@ export const products = [
     badge: 'Best seller',
     countInStock: 18,
     images: mkImages(
-      'https://images.unsplash.com/photo-1514989940723-e8e51635b782?auto=format&fit=crop&w=1200&q=80',
+      'https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcTwhe7wbt3rOa4VUn6Pb1kRWL_EchwZxOw3rToWeHTewH2Pk6DVHuYBoHJtqbOdXf3AYPFu2kCGKvQkSUwaJk6-DZR_-oVqFSPAJKZQFlgZ2tnvVBDHX_SD1WvzszyRbYYnv5lufuAzjNc&usqp=CAc',
       [
         'https://images.unsplash.com/photo-1528701800489-20be3c2ea3e7?auto=format&fit=crop&w=1200&q=80',
         'https://images.unsplash.com/photo-1506806732259-39c2d0268443?auto=format&fit=crop&w=1200&q=80',
@@ -102,7 +102,7 @@ export const products = [
     badge: 'New',
     countInStock: 24,
     images: mkImages(
-      'https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?auto=format&fit=crop&w=1200&q=80',
+      'https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRz2ffyl2XPWZJt_yzuipgQrl_54x1Af8ERBuuuw7uyAXGTc4kaSlw3pkgddtUE6TtcviGsMSayqjkS7SHrWVCMPfZ8wvruo8LJ3kjHuvEOMXtzL5kV5Fmz5oKayQc2T5a3FES5Ya8&usqp=CAc',
       [
         'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1200&q=80',
         'https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=1200&q=80',
@@ -124,7 +124,7 @@ export const products = [
     badge: 'Hot',
     countInStock: 9,
     images: mkImages(
-      'https://images.unsplash.com/photo-1593305841991-05c297ba4575?auto=format&fit=crop&w=1200&q=80',
+      'https://5.imimg.com/data5/SELLER/Default/2025/2/486112219/BW/WZ/TF/11936368/samsung-neo-qled-4k-qn90d-smart-ai-tv.jpg',
       [
         'https://images.unsplash.com/photo-1580917868643-8f1a2e3e5b45?auto=format&fit=crop&w=1200&q=80',
         'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=1200&q=80',
