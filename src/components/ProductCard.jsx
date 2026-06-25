@@ -148,12 +148,19 @@ export default function ProductCard({ product }) {
 
         {Array.isArray(images) && images.length > 1 ? (
           <Stack direction="row" spacing={1} sx={{ mt: 0.5, mb: 0.75, overflow: 'hidden' }}>
-            {images.slice(0, 3).map((img) => (
+            {images.slice(0, 3).map((img, idx) => (
               <Box
-                key={img}
+                key={`${img}-${idx}`}
                 component="img"
                 src={img}
                 alt={displayProduct.name}
+                loading="lazy"
+                onError={(event) => {
+                  // If any thumbnail fails to load, avoid showing the entire thumbnail row.
+                  // This is done by removing the thumbnail from the DOM via parent re-render signal.
+                  // We keep it simple: hide this single thumbnail.
+                  event.currentTarget.style.display = 'none';
+                }}
                 sx={{
                   width: 46,
                   height: 46,
@@ -166,6 +173,7 @@ export default function ProductCard({ product }) {
             ))}
           </Stack>
         ) : null}
+
 
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
           <Chip
