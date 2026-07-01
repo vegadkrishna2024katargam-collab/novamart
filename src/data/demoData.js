@@ -60,9 +60,9 @@ export const products = [
     badge: '18% off',
     countInStock: 33,
     images: mkImages(
-      'adidas-images-for-desktop-background-wallpaper-preview.jpg',
+      'https://i.ibb.co/FkNLgGn7/adidas-shoes.png',
       [
-        'adidas-images-for-desktop-background-wallpaper-preview.jpg'
+        'https://i.ibb.co/FkNLgGn7/adidas-shoes.png'
       ]
     ),
     description: 'Lightweight training shoe built for all-day comfort and a stable, springy ride on pavement or track.',
