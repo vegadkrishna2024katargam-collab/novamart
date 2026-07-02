@@ -106,9 +106,10 @@ export default function ProductDetailsPage() {
           <Grid item xs={12} md={6}>
             <MotionStack
               spacing={2.5}
-              initial={{ opacity: 0, x: -30 }}
+              initial={{ opacity: 0, x: -24 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
+              sx={{ height: '100%' }}
             >
               {/* Main Image */}
               <Paper
@@ -133,7 +134,8 @@ export default function ProductDetailsPage() {
                     onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&w=1200&q=80'; }}
                     sx={{
                       width: '100%',
-                      maxHeight: 600,
+                      height: 'auto',
+                      maxHeight: 520,
                       objectFit: 'contain',
                       display: 'block',
                       mx: 'auto',
