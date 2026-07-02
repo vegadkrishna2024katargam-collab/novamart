@@ -156,7 +156,7 @@ export default function ProductDetailsPage() {
                 sx={{
                   width: '100%',
                   maxHeight: 500,
-                  objectFit: 'contain',
+                  objectFit: 'cover',
                   display: 'block',
                   mx: 'auto',
                 }}
