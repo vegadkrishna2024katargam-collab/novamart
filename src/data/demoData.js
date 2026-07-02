@@ -122,11 +122,12 @@ export const products = [
     badge: 'Hot',
     countInStock: 9,
     images: mkImages(
-      'https://i.ibb.co/r23dKrc0/Samsung-Neo-View-4-K.png',
+      'https://electronicparadise.in/cdn/shop/files/PurplecrystleLED.jpg?crop=center&height=1200&v=1701755152&width=1200',
       [
-        'https://i.ibb.co/r23dKrc0/Samsung-Neo-View-4-K.png',
+        'https://electronicparadise.in/cdn/shop/files/PurplecrystleLED.jpg?crop=center&height=1200&v=1701755152&width=1200',
       ]
     ),
+
     description: 'Cinematic 4K panel with rich contrast, smart apps, and low-latency gaming mode for sharper action.',
     specs: ['4K resolution', 'Smart apps', 'Gaming mode'],
   },
