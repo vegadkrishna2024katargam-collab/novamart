@@ -145,24 +145,22 @@ export default function ProductDetailsPage() {
         <Grid item xs={12} md={6}>
           <Stack spacing={2}>
             {/* Main Product Image */}
-            <Paper sx={{ overflow: 'hidden', borderRadius: 2, bgcolor: 'background.default' }}>
-              <Box sx={{ position: 'relative', aspectRatio: '1 / 1', overflow: 'hidden' }}>
-                <Box
-                  component="img"
-                  src={selectedImage}
-                  alt={product.name}
-                  onError={(e) => {
-                    e.target.src = 'https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&w=1200&q=80';
-                  }}
-                  sx={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    transition: 'transform .35s ease',
-                    '&:hover': { transform: 'scale(1.14)' },
-                  }}
-                />
-              </Box>
+            <Paper sx={{ borderRadius: 2, bgcolor: 'background.default', p: 2 }}>
+              <Box
+                component="img"
+                src={selectedImage}
+                alt={product.name}
+                onError={(e) => {
+                  e.target.src = 'https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&w=1200&q=80';
+                }}
+                sx={{
+                  width: '100%',
+                  maxHeight: 500,
+                  objectFit: 'contain',
+                  display: 'block',
+                  mx: 'auto',
+                }}
+              />
             </Paper>
           </Stack>
         </Grid>
