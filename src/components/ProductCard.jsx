@@ -83,7 +83,8 @@ export default function ProductCard({ product }) {
         <Box
           component="img"
           // only the main listing image should appear on the card
-          src={displayProduct.image}
+          src={displayProduct.images?.[0] || displayProduct.image}
+
           alt={displayProduct.name}
           sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
           onError={(event) => {

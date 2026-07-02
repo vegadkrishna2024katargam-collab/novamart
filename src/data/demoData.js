@@ -1,4 +1,4 @@
-import ChairIcon from '@mui/icons-material/Chair';
+ import ChairIcon from '@mui/icons-material/Chair';
 import CheckroomIcon from '@mui/icons-material/Checkroom';
 import DevicesIcon from '@mui/icons-material/Devices';
 import FaceRetouchingNaturalIcon from '@mui/icons-material/FaceRetouchingNatural';
@@ -80,10 +80,9 @@ export const products = [
     badge: 'Best seller',
     countInStock: 18,
     images: mkImages(
-      'https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcTwhe7wbt3rOa4VUn6Pb1kRWL_EchwZxOw3rToWeHTewH2Pk6DVHuYBoHJtqbOdXf3AYPFu2kCGKvQkSUwaJk6-DZR_-oVqFSPAJKZQFlgZ2tnvVBDHX_SD1WvzszyRbYYnv5lufuAzjNc&usqp=CAc',
+      'https://i.ibb.co/HDHgcnM0/Puma-Street-Motion-shoes.png',
       [
-        'https://images.unsplash.com/photo-1528701800489-20be3c2ea3e7?auto=format&fit=crop&w=1200&q=80',
-        'https://images.unsplash.com/photo-1506806732259-39c2d0268443?auto=format&fit=crop&w=1200&q=80',
+        'https://i.ibb.co/HDHgcnM0/Puma-Street-Motion-shoes.png',
       ]
     ),
     description: 'Clean street sneaker with breathable panels, responsive foam cushioning, and an everyday-ready silhouette.',
@@ -102,10 +101,9 @@ export const products = [
     badge: 'New',
     countInStock: 24,
     images: mkImages(
-      'https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRz2ffyl2XPWZJt_yzuipgQrl_54x1Af8ERBuuuw7uyAXGTc4kaSlw3pkgddtUE6TtcviGsMSayqjkS7SHrWVCMPfZ8wvruo8LJ3kjHuvEOMXtzL5kV5Fmz5oKayQc2T5a3FES5Ya8&usqp=CAc',
+      'https://i.ibb.co/39t3CN33/Apple-Studio-Watch.png',
       [
-        'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1200&q=80',
-        'https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=1200&q=80',
+        'https://i.ibb.co/39t3CN33/Apple-Studio-Watch.png',
       ]
     ),
     description: 'Smart health, notifications, fitness insights, and all-day battery in one polished wearable.',
@@ -124,10 +122,9 @@ export const products = [
     badge: 'Hot',
     countInStock: 9,
     images: mkImages(
-      'https://5.imimg.com/data5/SELLER/Default/2025/2/486112219/BW/WZ/TF/11936368/samsung-neo-qled-4k-qn90d-smart-ai-tv.jpg',
+      'https://i.ibb.co/r23dKrc0/Samsung-Neo-View-4-K.png',
       [
-        'https://images.unsplash.com/photo-1580917868643-8f1a2e3e5b45?auto=format&fit=crop&w=1200&q=80',
-        'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=1200&q=80',
+        'https://i.ibb.co/r23dKrc0/Samsung-Neo-View-4-K.png',
       ]
     ),
     description: 'Cinematic 4K panel with rich contrast, smart apps, and low-latency gaming mode for sharper action.',
@@ -146,10 +143,9 @@ export const products = [
     badge: 'Trending',
     countInStock: 27,
     images: mkImages(
-      'https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=1200&q=80',
+      'https://i.ibb.co/5gB4dzn3/sony-pulse-speaker.png',
       [
-        'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1200&q=80',
-        'https://images.unsplash.com/photo-1518232676118-0fdb2f8e8a2b?auto=format&fit=crop&w=1200&q=80',
+        'https://i.ibb.co/5gB4dzn3/sony-pulse-speaker.png',
       ]
     ),
     description: 'Compact wireless speaker with room-filling sound, deep bass, and smooth Bluetooth pairing.',
@@ -168,10 +164,9 @@ export const products = [
     badge: 'Sale',
     countInStock: 12,
     images: mkImages(
-      'https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?auto=format&fit=crop&w=1200&q=80',
+      'https://i.ibb.co/YFD8nRBV/Aurora-Lounge-Chair.png',
       [
-        'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1200&q=80',
-        'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1200&q=80',
+        'https://i.ibb.co/YFD8nRBV/Aurora-Lounge-Chair.png',
       ]
     ),
     description: 'Modern lounge seating with durable fabric, angled wooden legs, and a compact profile that fits any room.',
@@ -190,10 +185,9 @@ export const products = [
     badge: 'New',
     countInStock: 6,
     images: mkImages(
-      'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80',
+      'https://i.ibb.co/3mgrfRch/Nord-Desk-Table.png',
       [
-        'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=1200&q=80',
-        'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80',
+        'https://i.ibb.co/3mgrfRch/Nord-Desk-Table.png',
       ]
     ),
     description: 'Minimal work desk with a durable finish and generous surface area—built for focus, study, and home offices.',
@@ -211,10 +205,9 @@ export const products = [
     badge: 'Limited',
     countInStock: 15,
     images: mkImages(
-      'https://images.unsplash.com/photo-1581539250439-c96689b516dd?auto=format&fit=crop&w=1200&q=80',
+      'https://i.ibb.co/Wv93Fz6K/Studio-Storage-Shelf-i.png',
       [
-        'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=1200&q=80',
-        'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1200&q=80',
+        'https://i.ibb.co/Wv93Fz6K/Studio-Storage-Shelf-i.png',
       ]
     ),
     description: 'Open shelving unit designed for books, decor, and everyday storage—stable, stylish, and easy to assemble.',
@@ -233,10 +226,9 @@ export const products = [
     badge: 'Bundle',
     countInStock: 60,
     images: mkImages(
-      'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1200&q=80',
+      'https://i.ibb.co/1tTdrwKM/Hydra-Dew-Serum-Set.png',
       [
-        'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=1200&q=80',
-        'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=1200&q=80',
+        'https://i.ibb.co/1tTdrwKM/Hydra-Dew-Serum-Set.png',
       ]
     ),
     description: 'Curated serum, moisturizer, cleanser, and SPF routine for daily skin care—hydration you can feel.',
@@ -255,10 +247,9 @@ export const products = [
     badge: 'Bundle',
     countInStock: 44,
     images: mkImages(
-      'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1200&q=80',
+      'https://i.ibb.co/Kjknr0Ym/Glow-Lab-Skin-Ritual-Kit.png',
       [
-        'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=1200&q=80',
-        'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=1200&q=80',
+        'https://i.ibb.co/Kjknr0Ym/Glow-Lab-Skin-Ritual-Kit.png',
       ]
     ),
     description: 'Curated serum, moisturizer, cleanser, and SPF routine for daily skin care—designed for a healthy glow.',
@@ -277,10 +268,9 @@ export const products = [
     badge: 'Hot',
     countInStock: 70,
     images: mkImages(
-      'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=1200&q=80',
+      'https://i.ibb.co/Xx0T69jS/Velvet-Glow-Lip-Set.png',
       [
-        'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=1200&q=80',
-        'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=1200&q=80',
+        'https://i.ibb.co/Xx0T69jS/Velvet-Glow-Lip-Set.png',
       ]
     ),
     description: 'Soft matte lip collection with rich color payoff and a smooth, comfortable finish.',
