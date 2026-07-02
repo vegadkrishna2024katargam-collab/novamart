@@ -15,9 +15,9 @@ import api from '../services/api.js';
 import formatCurrency from '../utils/formatCurrency.js';
 import { getCategoryName, getProductId, getProductImages, normalizeProduct, toCartProduct } from '../utils/productUtils.js';
 
-const MotionBox = motion(Box);
 const MotionStack = motion(Stack);
 const MotionPaper = motion(Paper);
+
 
 export default function ProductDetailsPage() {
   const { id } = useParams();
