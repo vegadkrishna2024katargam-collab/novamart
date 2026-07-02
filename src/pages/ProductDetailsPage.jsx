@@ -134,8 +134,8 @@ export default function ProductDetailsPage() {
                     onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&w=1200&q=80'; }}
                     sx={{
                       width: '100%',
-                      height: 'auto',
-                      maxHeight: 520,
+                      height: '100%',
+                      maxHeight: 560,
                       objectFit: 'contain',
                       display: 'block',
                       mx: 'auto',
